@@ -1,7 +1,8 @@
 class NoiseGenerator {
     constructor() {
-        this.scale = 1;
-        this.frequency = 10; // Or whatever value you settled on
+        this.scale = 1; // Controls both horizontal and proportional vertical scaling
+        this.frequency = 10; // Base frequency
+        this.heightScale = 200; // Overall height multiplier, independent of 'noiseScale'
     }
 
     hash(x, y) {
@@ -32,25 +33,33 @@ class NoiseGenerator {
 
     generateHeightMap(width, height) {
         const heightMap = new Float32Array(width * height);
-        
+
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
-                // Key change: Normalize x and y to a range centered around 0 (e.g., -0.5 to 0.5)
-                const normalizedX = (x / (width - 1)) - 0.5; // Maps 0 to -0.5, (width-1)/2 to 0, width-1 to 0.5
-                const normalizedY = (y / (height - 1)) - 0.5; // Maps 0 to -0.5, (height-1)/2 to 0, height-1 to 0.5
-                
-                const nx = normalizedX * this.frequency * this.scale;
-                const ny = normalizedY * this.frequency * this.scale;
-                
-                const noiseValue = this.noise(nx, ny);
-                heightMap[y * width + x] = noiseValue * 2 - 1;
+                const normalizedX = (x / (width - 1)) - 0.5;
+                const normalizedY = (y / (height - 1)) - 0.5;
+
+                // CRUCIAL CHANGE: Divide frequency by this.scale for horizontal scaling
+                // A larger 'this.scale' now means a lower effective frequency,
+                // leading to larger, more spread-out features.
+                const effectiveFrequency = this.frequency / this.scale;
+                const nx = normalizedX * effectiveFrequency;
+                const ny = normalizedY * effectiveFrequency;
+
+                let noiseValue = this.noise(nx, ny);
+                noiseValue = noiseValue * 2 - 1; // Scale noise from [0, 1] to [-1, 1]
+
+                // Keep multiplying noiseValue by 'this.scale' for proportional height
+                // and then by 'this.heightScale' for the independent height control.
+                heightMap[y * width + x] = noiseValue * this.scale * this.heightScale;
             }
         }
 
         return heightMap;
     }
 
-    updateParameters(scale) {
+    updateParameters(scale, heightScale) {
         this.scale = scale;
+        this.heightScale = heightScale;
     }
 }
