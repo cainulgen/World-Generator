@@ -4,7 +4,7 @@
 >
 > This project is a **browser game**.  
 > All code will be pushed to GitHub, served live via GitHub Pages, and must work when run directly in a browser (no server-side stuff, no Node-only modules).  
-> Test your work in this environment—if it breaks on GitHub Pages, it’s not good enough.
+> Test your work in this environment—if it breaks on GitHub Pages, it's not good enough.
 >
 > Build everything with this deployment and use case in mind.
 
@@ -36,7 +36,17 @@ A browser-based land generation tool that creates beautiful and customizable lan
 
 ### Getting Started
 
-*More details about setup and usage will be added as the project develops.*
+The project currently consists of three main files:
+
+- `index.html`: The main entry point that loads Three.js and our application code
+- `styles.css`: Basic styling for the scene container and dark background
+- `main.js`: Core Three.js implementation featuring:
+  - A 2000m x 2000m landscape plane
+  - Orbit controls for camera movement (rotate, zoom, pan)
+  - Responsive design that adapts to window resizing
+  - Basic lighting setup
+
+To run the project locally, simply open `index.html` in a web browser. For live deployment, enable GitHub Pages in your repository settings.
 
 ## Features
 
