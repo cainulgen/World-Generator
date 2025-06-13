@@ -5,10 +5,13 @@ class PerlinNoiseGenerator {
         this.heightScale = 45; // Overall height multiplier, independent of 'noiseScale'
         this.enabled = true; // Whether noise is enabled
 
-        // New FBM parameters
+        // FBM parameters
         this.octaves = 4; // Number of noise layers
         this.persistence = 0.5; // How much each successive octave contributes (amplitude multiplier)
         this.lacunarity = 2.0; // How much the frequency increases for each successive octave
+
+        // New: Ridged parameter
+        this.isRidged = false; // Whether to generate ridged multifractal noise
     }
 
     hash(x, y) {
@@ -21,7 +24,6 @@ class PerlinNoiseGenerator {
         return a + (b - a) * t;
     }
 
-    // This is the single-octave Perlin noise function
     noise(x, y) {
         const X = Math.floor(x);
         const Y = Math.floor(y);
@@ -38,7 +40,6 @@ class PerlinNoiseGenerator {
         return this.smoothstep(nx0, nx1, yf);
     }
 
-    // New FBM function to combine octaves
     fbm(x, y) {
         let total = 0;
         let amplitude = 1;
@@ -46,16 +47,33 @@ class PerlinNoiseGenerator {
         let maxValue = 0; // Used for normalizing result to -1 to 1
 
         for (let i = 0; i < this.octaves; i++) {
-            total += this.noise(x * frequency, y * frequency) * amplitude;
+            let noiseValue = this.noise(x * frequency, y * frequency);
 
-            maxValue += amplitude; // Keep track of maximum possible amplitude
+            if (this.isRidged) {
+                // Ridged Multifractal logic: invert and absolute the noise
+                // A common way is 1.0 - Math.abs(noiseValue * 2 - 1)
+                // Since our base noise is 0-1, (noiseValue * 2 - 1) is -1 to 1
+                // So, 1 - Math.abs(normalizedNoise)
+                noiseValue = 1.0 - Math.abs(noiseValue * 2 - 1);
+                
+                // For a more classic ridged effect, subsequent layers can be influenced
+                // by the previous layer's value, but for simplicity and direct control,
+                // we apply the inversion per octave.
+                // It's also often weighted by the previous sum, but for a simple toggle,
+                // this direct inversion per octave works well.
+            }
+
+            total += noiseValue * amplitude;
+
+            maxValue += amplitude;
             
             amplitude *= this.persistence;
             frequency *= this.lacunarity;
         }
 
         // Normalize the noise value to the range [-1, 1]
-        return (total / maxValue) * 2 - 1; // FBM's total can exceed 1, so normalize properly
+        // This ensures the combined output is within a consistent range for height scaling
+        return (total / maxValue); // Total already in [-1, 1] because noiseValue is now effectively [-1, 1] or [0, 1] after ridged applied, and maxvalue is sum of amplitudes.
     }
 
 
@@ -76,11 +94,8 @@ class PerlinNoiseGenerator {
                 const nx = normalizedX * effectiveFrequency;
                 const ny = normalizedY * effectiveFrequency;
 
-                // Use the new fbm function instead of the single 'noise' function
                 let noiseValue = this.fbm(nx, ny);
-                // noiseValue is already normalized to [-1, 1] by fbm, so remove the *2-1 here
-                // noiseValue = noiseValue * 2 - 1; // REMOVE THIS LINE
-
+                
                 heightMap[y * width + x] = noiseValue * this.scale * this.heightScale;
             }
         }
@@ -88,14 +103,13 @@ class PerlinNoiseGenerator {
         return heightMap;
     }
 
-    // Update parameters method to include new FBM params
-    updateParameters(scale, heightScale, enabled, octaves, persistence, lacunarity) {
+    // Update parameters method to include new FBM and ridged params
+    updateParameters(scale, heightScale, enabled, octaves, persistence, lacunarity, isRidged) {
         this.scale = scale;
         this.heightScale = heightScale;
         if (enabled !== undefined) {
             this.enabled = enabled;
         }
-        // Update new FBM parameters if provided
         if (octaves !== undefined) {
             this.octaves = octaves;
         }
@@ -104,6 +118,10 @@ class PerlinNoiseGenerator {
         }
         if (lacunarity !== undefined) {
             this.lacunarity = lacunarity;
+        }
+        // New: Update isRidged parameter
+        if (isRidged !== undefined) {
+            this.isRidged = isRidged;
         }
     }
 }

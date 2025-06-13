@@ -42,7 +42,7 @@ function init() {
     // Initialize generators (they also populate their UI in their constructors)
     globalSettings = new GlobalSettings();
     voronoiGenerator = new VoronoiGenerator();
-    perlinNoiseGenerator = new PerlinNoiseGenerator(); // PerlinNoiseGenerator UI is handled here
+    perlinNoiseGenerator = new PerlinNoiseGenerator();
 
     // Event listeners for settings changes
     document.addEventListener('globalSettingsChanged', (e) => {
@@ -59,13 +59,14 @@ function init() {
     });
 
     // Event listeners for Perlin Noise & Distortion panel
-    // These elements exist in index.html, so we can set up listeners directly
     const noiseEnabledToggle = document.getElementById('noiseEnabled');
     const noiseScaleInput = document.getElementById('noiseScale');
     const heightScaleInput = document.getElementById('heightScale');
     const octavesInput = document.getElementById('octaves');
     const persistenceInput = document.getElementById('persistence');
     const lacunarityInput = document.getElementById('lacunarity');
+    // New: Ridged toggle
+    const isRidgedToggle = document.getElementById('isRidged');
 
     const noiseScaleValue = noiseScaleInput.nextElementSibling;
     const heightScaleValue = heightScaleInput.nextElementSibling;
@@ -82,7 +83,8 @@ function init() {
             noiseEnabledToggle.checked,
             parseInt(octavesInput.value),
             parseFloat(persistenceInput.value),
-            parseFloat(lacunarityInput.value)
+            parseFloat(lacunarityInput.value),
+            isRidgedToggle.checked // Pass the new ridged parameter
         );
         generateTerrain();
     }
@@ -99,6 +101,8 @@ function init() {
     persistenceValue.textContent = perlinNoiseGenerator.persistence.toFixed(2);
     lacunarityInput.value = perlinNoiseGenerator.lacunarity;
     lacunarityValue.textContent = perlinNoiseGenerator.lacunarity.toFixed(1);
+    // New: Set initial ridged toggle value
+    isRidgedToggle.checked = perlinNoiseGenerator.isRidged;
 
 
     // Add event listeners for Perlin noise controls
@@ -123,6 +127,9 @@ function init() {
         lacunarityValue.textContent = parseFloat(e.target.value).toFixed(1);
         updatePerlinNoiseAndGenerate();
     });
+    // New: Event listener for ridged toggle
+    isRidgedToggle.addEventListener('change', updatePerlinNoiseAndGenerate);
+
 
     createPlane();
     generateTerrain();
