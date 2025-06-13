@@ -34,6 +34,11 @@ A browser-based land generation tool that creates beautiful and customizable lan
    - Make it easy to add new features without major refactoring
    - Keep interfaces between modules clean and well-defined
 
+5. **UI/UX Standards**
+   - Use the system font stack for all text: `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`
+   - Maintain consistent styling across all UI components
+   - Ensure all interactive elements have clear visual feedback
+
 ### Getting Started
 
 The project currently consists of three main files:

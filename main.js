@@ -3,6 +3,9 @@ const container = document.querySelector('#scene-container');
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x1a1a1a);
 
+// Initialize Global Settings
+const globalSettings = new GlobalSettings();
+
 // Camera setup
 const camera = new THREE.PerspectiveCamera(
     75,
@@ -20,7 +23,7 @@ renderer.setPixelRatio(window.devicePixelRatio);
 container.appendChild(renderer.domElement);
 
 // Create the landscape plane (2000m x 2000m)
-const planeGeometry = new THREE.PlaneGeometry(2000, 2000, 100, 100);
+let planeGeometry = new THREE.PlaneGeometry(2000, 2000, 100, 100);
 const planeMaterial = new THREE.MeshStandardMaterial({
     color: 0x3a7e4f,
     side: THREE.DoubleSide,
@@ -29,6 +32,34 @@ const planeMaterial = new THREE.MeshStandardMaterial({
 const plane = new THREE.Mesh(planeGeometry, planeMaterial);
 plane.rotation.x = -Math.PI / 2;
 scene.add(plane);
+
+// Function to update plane geometry based on mesh detail
+function updatePlaneGeometry() {
+    const segments = globalSettings.getMeshDetail();
+    
+    // Remove old geometry
+    plane.geometry.dispose();
+    
+    // Create new geometry with updated segments
+    planeGeometry = new THREE.PlaneGeometry(2000, 2000, segments, segments);
+    plane.geometry = planeGeometry;
+}
+
+// Listen for global settings changes
+document.addEventListener('globalSettingsChanged', (event) => {
+    const { meshDetail, textureDetail } = event.detail;
+    
+    // Update plane geometry if mesh detail changed
+    if (meshDetail) {
+        updatePlaneGeometry();
+    }
+    
+    // Update texture resolution if texture detail changed
+    if (textureDetail) {
+        // This will be implemented when we add texture generation
+        console.log('Texture detail changed to:', textureDetail);
+    }
+});
 
 // Add ambient light
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
