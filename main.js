@@ -5,6 +5,7 @@ let planeMesh;
 let perlinNoiseGenerator;
 let globalSettings;
 let voronoiGenerator;
+let colorGenerator;
 
 function init() {
     // Scene setup
@@ -43,6 +44,7 @@ function init() {
     globalSettings = new GlobalSettings();
     voronoiGenerator = new VoronoiGenerator();
     perlinNoiseGenerator = new PerlinNoiseGenerator();
+    colorGenerator = new ColorGenerator();
 
     // Event listeners for settings changes
     document.addEventListener('globalSettingsChanged', (e) => {
@@ -53,9 +55,13 @@ function init() {
     });
 
     document.addEventListener('voronoiSettingsChanged', (e) => {
-        const { enabled, numCells, heightMultiplier, smoothness, cellJitter } = e.detail;
-        console.log('Voronoi settings changed:', enabled, numCells, heightMultiplier, smoothness, cellJitter);
+        console.log('Voronoi settings changed');
         generateTerrain();
+    });
+
+    document.addEventListener('colorSettingsChanged', (e) => {
+        console.log('Color settings changed');
+        updateTerrainColor();
     });
 
     // Event listeners for Perlin Noise & Distortion panel
@@ -65,7 +71,6 @@ function init() {
     const octavesInput = document.getElementById('octaves');
     const persistenceInput = document.getElementById('persistence');
     const lacunarityInput = document.getElementById('lacunarity');
-    // New: Ridged toggle
     const isRidgedToggle = document.getElementById('isRidged');
 
     const noiseScaleValue = noiseScaleInput.nextElementSibling;
@@ -84,12 +89,12 @@ function init() {
             parseInt(octavesInput.value),
             parseFloat(persistenceInput.value),
             parseFloat(lacunarityInput.value),
-            isRidgedToggle.checked // Pass the new ridged parameter
+            isRidgedToggle.checked
         );
         generateTerrain();
     }
 
-    // Set initial values on UI to match generator defaults (important for first render)
+    // Set initial values on UI to match generator defaults
     noiseScaleInput.value = perlinNoiseGenerator.scale;
     noiseScaleValue.textContent = perlinNoiseGenerator.scale.toFixed(1);
     heightScaleInput.value = perlinNoiseGenerator.heightScale;
@@ -101,7 +106,6 @@ function init() {
     persistenceValue.textContent = perlinNoiseGenerator.persistence.toFixed(2);
     lacunarityInput.value = perlinNoiseGenerator.lacunarity;
     lacunarityValue.textContent = perlinNoiseGenerator.lacunarity.toFixed(1);
-    // New: Set initial ridged toggle value
     isRidgedToggle.checked = perlinNoiseGenerator.isRidged;
 
 
@@ -127,7 +131,6 @@ function init() {
         lacunarityValue.textContent = parseFloat(e.target.value).toFixed(1);
         updatePerlinNoiseAndGenerate();
     });
-    // New: Event listener for ridged toggle
     isRidgedToggle.addEventListener('change', updatePerlinNoiseAndGenerate);
 
 
@@ -144,7 +147,10 @@ function createPlane() {
     const geometry = new THREE.PlaneGeometry(1000, 1000, segments, segments);
     geometry.rotateX(-Math.PI / 2);
 
-    const material = new THREE.MeshPhongMaterial({ color: 0x00ff00, flatShading: true });
+    const material = new THREE.MeshPhongMaterial({
+        flatShading: true,
+        vertexColors: true // Enable vertex colors
+    });
 
     planeMesh = new THREE.Mesh(geometry, material);
     scene.add(planeMesh);
@@ -157,6 +163,7 @@ function updatePlaneGeometry(segments) {
     }
     const geometry = new THREE.PlaneGeometry(1000, 1000, segments, segments);
     geometry.rotateX(-Math.PI / 2);
+    // Re-create the mesh with the new geometry and existing material
     planeMesh = new THREE.Mesh(geometry, planeMesh.material);
     scene.add(planeMesh);
 }
@@ -175,7 +182,56 @@ function generateTerrain() {
     }
     positionAttribute.needsUpdate = true;
     geometry.computeVertexNormals();
+
+    // After updating the geometry, update the colors
+    updateTerrainColor();
 }
+
+function updateTerrainColor() {
+    const { enabled, paletteName } = colorGenerator.getSettings();
+    const material = planeMesh.material;
+    const geometry = planeMesh.geometry;
+    const positionAttribute = geometry.attributes.position;
+    const vertexCount = positionAttribute.count;
+
+    if (!enabled) {
+        material.vertexColors = false;
+        material.color.set(0x00ff00); // Set to default green
+        material.needsUpdate = true;
+        return;
+    }
+
+    material.vertexColors = true;
+    material.color.set(0xffffff); // Set to white to not tint vertex colors
+
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (let i = 0; i < vertexCount; i++) {
+        const y = positionAttribute.getY(i);
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+    }
+
+    const heightRange = maxY - minY;
+    const colors = new Float32Array(vertexCount * 3);
+    const palette = colorGenerator.palettes[paletteName];
+
+    for (let i = 0; i < vertexCount; i++) {
+        const y = positionAttribute.getY(i);
+        const alpha = heightRange > 0 ? (y - minY) / heightRange : 0.5;
+        const color = colorGenerator.getColorAt(palette, alpha);
+        colors[i * 3] = color.r;
+        colors[i * 3 + 1] = color.g;
+        colors[i * 3 + 2] = color.b;
+    }
+
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    if (geometry.attributes.color) {
+        geometry.attributes.color.needsUpdate = true;
+    }
+    material.needsUpdate = true;
+}
+
 
 function animate() {
     requestAnimationFrame(animate);
@@ -196,6 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const terrainOptionsToggle = document.getElementById('terrain-options-toggle');
     const terrainOptionsPanel = document.getElementById('terrain-options-panel');
+    const sceneContainer = document.getElementById('scene-container'); // Get scene container
 
     // IMPORTANT: Panel Toggle Logic - DO NOT MODIFY THIS SECTION WITHOUT CAREFUL REVIEW.
     // This handles the opening/closing of the side panel and the dynamic icon change
@@ -226,11 +283,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // IMPORTANT: Click-outside-panel-to-close logic - DO NOT MODIFY WITHOUT CAREFUL REVIEW.
     // This listener closes the panel if a click occurs anywhere on the document
-    // that is NOT inside the panel itself and NOT on the toggle button.
+    // that is NOT inside the panel, the toggle button, OR the 3D scene container.
     document.addEventListener('click', (e) => {
         if (terrainOptionsPanel.classList.contains('active') &&
             !terrainOptionsPanel.contains(e.target) &&
-            !terrainOptionsToggle.contains(e.target)) {
+            !terrainOptionsToggle.contains(e.target) &&
+            !sceneContainer.contains(e.target)) { // <-- FIX: Prevent closing when clicking on the 3D scene
             // Panel is open and click was outside, so close it
             terrainOptionsPanel.classList.remove('active');
             // Reset the toggle button icon to 'cog' when closed by external click
@@ -249,8 +307,10 @@ document.addEventListener('DOMContentLoaded', () => {
         e.stopPropagation();
     });
 
-    // Accordion functionality for panel sections
-    // This must run *after* the sections have been populated by the generator constructors
+    // IMPORTANT: Accordion functionality for panel sections.
+    // By default, all sections are initialized in an "active" (expanded) state directly in the HTML.
+    // This logic handles the user-initiated toggling (collapsing/expanding) of these sections.
+    // Do not add logic here that would automatically collapse panels, per user requirements.
     document.querySelectorAll('.panel-section .section-header').forEach(header => {
         header.addEventListener('click', () => {
             const section = header.closest('.panel-section');
