@@ -5,8 +5,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>World Generator</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <button id="terrain-options-toggle" class="terrain-options-toggle">
+        <i class="fas fa-cog"></i>
+    </button>
+    <div id="terrain-options-panel" class="terrain-options-panel">
+        <div class="panel-header">
+            <h2>Terrain Settings</h2>
+            <button id="terrain-options-close" class="terrain-options-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="panel-content">
+            <div class="panel-section" data-section="global-settings">
+                <div class="section-header">
+                    <h3>Global Settings</h3>
+                    <span class="expand-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <p>Parameters here</p>
+                </div>
+            </div>
+            <div class="panel-section" data-section="base-shape">
+                <div class="section-header">
+                    <h3>Base Shape</h3>
+                    <span class="expand-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <p>Parameters here</p>
+                </div>
+            </div>
+            <div class="panel-section" data-section="noise-distortion">
+                <div class="section-header">
+                    <h3>Noise & Distortion</h3>
+                    <span class="expand-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <p>Parameters here</p>
+                </div>
+            </div>
+            <div class="panel-section" data-section="rock-formations">
+                <div class="section-header">
+                    <h3>Rock Formations</h3>
+                    <span class="expand-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <p>Parameters here</p>
+                </div>
+            </div>
+            <div class="panel-section" data-section="color">
+                <div class="section-header">
+                    <h3>Color</h3>
+                    <span class="expand-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <p>Parameters here</p>
+                </div>
+            </div>
+        </div>
+    </div>
     <div id="scene-container"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>

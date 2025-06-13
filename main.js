@@ -62,4 +62,32 @@ function animate() {
     renderer.render(scene, camera);
 }
 
-animate(); 
+animate();
+
+// Terrain Options Panel Functionality
+document.addEventListener('DOMContentLoaded', () => {
+    const toggleButton = document.getElementById('terrain-options-toggle');
+    const closeButton = document.getElementById('terrain-options-close');
+    const panel = document.getElementById('terrain-options-panel');
+    const sections = document.querySelectorAll('.panel-section');
+
+    // Toggle main panel
+    toggleButton.addEventListener('mousedown', () => {
+        panel.classList.add('active');
+        toggleButton.style.display = 'none';
+    });
+
+    // Close panel
+    closeButton.addEventListener('mousedown', () => {
+        panel.classList.remove('active');
+        toggleButton.style.display = 'flex';
+    });
+
+    // Toggle individual sections
+    sections.forEach(section => {
+        const header = section.querySelector('.section-header');
+        header.addEventListener('mousedown', () => {
+            section.classList.toggle('active');
+        });
+    });
+}); 
