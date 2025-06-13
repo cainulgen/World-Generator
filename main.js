@@ -71,22 +71,24 @@ function initializeNoiseControls() {
     const noiseSection = document.querySelector('[data-section="noise-distortion"] .section-content');
     const noiseScaleInput = noiseSection.querySelector('#noiseScale');
     const heightScaleInput = noiseSection.querySelector('#heightScale');
+    const noiseEnabledInput = noiseSection.querySelector('#noiseEnabled');
 
     // Set initial UI values to match NoiseGenerator's constructor defaults
     noiseScaleInput.value = noiseGenerator.scale;
     noiseScaleInput.nextElementSibling.textContent = noiseGenerator.scale.toFixed(1);
     heightScaleInput.value = noiseGenerator.heightScale;
     heightScaleInput.nextElementSibling.textContent = noiseGenerator.heightScale.toFixed(1);
-
+    noiseEnabledInput.checked = noiseGenerator.enabled;
 
     function updateNoise() {
         const noiseScale = parseFloat(noiseScaleInput.value);
         const heightScale = parseFloat(heightScaleInput.value);
-        noiseGenerator.updateParameters(noiseScale, heightScale); // Pass both
+        const enabled = noiseEnabledInput.checked;
+        noiseGenerator.updateParameters(noiseScale, heightScale, enabled);
         applyNoiseToGeometry();
     }
 
-    // Add event listeners for both sliders
+    // Add event listeners for both sliders and toggle
     noiseScaleInput.addEventListener('input', (e) => {
         e.target.nextElementSibling.textContent = parseFloat(e.target.value).toFixed(1);
         updateNoise();
@@ -96,6 +98,8 @@ function initializeNoiseControls() {
         e.target.nextElementSibling.textContent = parseFloat(e.target.value).toFixed(1);
         updateNoise();
     });
+
+    noiseEnabledInput.addEventListener('change', updateNoise);
 
     // Initial noise application
     updateNoise();

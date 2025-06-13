@@ -3,6 +3,7 @@ class NoiseGenerator {
         this.scale = 1; // Controls both horizontal and proportional vertical scaling
         this.frequency = 10; // Base frequency
         this.heightScale = 200; // Overall height multiplier, independent of 'noiseScale'
+        this.enabled = true; // Whether noise is enabled
     }
 
     hash(x, y) {
@@ -36,21 +37,21 @@ class NoiseGenerator {
 
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
+                if (!this.enabled) {
+                    heightMap[y * width + x] = 0;
+                    continue;
+                }
+
                 const normalizedX = (x / (width - 1)) - 0.5;
                 const normalizedY = (y / (height - 1)) - 0.5;
 
-                // CRUCIAL CHANGE: Divide frequency by this.scale for horizontal scaling
-                // A larger 'this.scale' now means a lower effective frequency,
-                // leading to larger, more spread-out features.
                 const effectiveFrequency = this.frequency / this.scale;
                 const nx = normalizedX * effectiveFrequency;
                 const ny = normalizedY * effectiveFrequency;
 
                 let noiseValue = this.noise(nx, ny);
-                noiseValue = noiseValue * 2 - 1; // Scale noise from [0, 1] to [-1, 1]
+                noiseValue = noiseValue * 2 - 1;
 
-                // Keep multiplying noiseValue by 'this.scale' for proportional height
-                // and then by 'this.heightScale' for the independent height control.
                 heightMap[y * width + x] = noiseValue * this.scale * this.heightScale;
             }
         }
@@ -58,8 +59,11 @@ class NoiseGenerator {
         return heightMap;
     }
 
-    updateParameters(scale, heightScale) {
+    updateParameters(scale, heightScale, enabled) {
         this.scale = scale;
         this.heightScale = heightScale;
+        if (enabled !== undefined) {
+            this.enabled = enabled;
+        }
     }
 }
