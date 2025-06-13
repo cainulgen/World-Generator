@@ -34,6 +34,9 @@ function onResize() {
 
 const resizeObserver = new ResizeObserver(onResize);
 resizeObserver.observe(canvasContainer);
+x7nuqj-codex/refactor-html-prototype-with-improved-structure
+// ensure renderer starts at correct size
+onResize();
 
 // UI events
 
