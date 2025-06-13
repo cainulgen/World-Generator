@@ -48,8 +48,8 @@ function init() {
 
     // Event listeners for settings changes
     document.addEventListener('globalSettingsChanged', (e) => {
-        const { meshDetail, textureDetail } = e.detail;
-        console.log('Global settings changed:', meshDetail, textureDetail);
+        const { meshDetail } = e.detail;
+        console.log('Global settings changed:', meshDetail);
         updatePlaneGeometry(meshDetail);
         generateTerrain();
     });
@@ -61,7 +61,8 @@ function init() {
 
     document.addEventListener('colorSettingsChanged', (e) => {
         console.log('Color settings changed');
-        updateTerrainColor();
+        // Only the material needs updating, not the geometry
+        updateTerrainMaterial();
     });
 
     // Event listeners for Perlin Noise & Distortion panel
@@ -147,9 +148,9 @@ function createPlane() {
     const geometry = new THREE.PlaneGeometry(1000, 1000, segments, segments);
     geometry.rotateX(-Math.PI / 2);
 
+    // Use a standard material; color/texture will be controlled by updateTerrainMaterial
     const material = new THREE.MeshPhongMaterial({
         flatShading: true,
-        vertexColors: true // Enable vertex colors
     });
 
     planeMesh = new THREE.Mesh(geometry, material);
@@ -158,14 +159,12 @@ function createPlane() {
 
 function updatePlaneGeometry(segments) {
     if (planeMesh) {
-        scene.remove(planeMesh);
+        // Dispose of the old geometry to free up memory
         planeMesh.geometry.dispose();
+        // Create new geometry and assign it to the existing mesh
+        planeMesh.geometry = new THREE.PlaneGeometry(1000, 1000, segments, segments);
+        planeMesh.geometry.rotateX(-Math.PI / 2);
     }
-    const geometry = new THREE.PlaneGeometry(1000, 1000, segments, segments);
-    geometry.rotateX(-Math.PI / 2);
-    // Re-create the mesh with the new geometry and existing material
-    planeMesh = new THREE.Mesh(geometry, planeMesh.material);
-    scene.add(planeMesh);
 }
 
 function generateTerrain() {
@@ -174,6 +173,7 @@ function generateTerrain() {
     const vertexCount = positionAttribute.count;
     const segments = Math.sqrt(vertexCount) - 1;
 
+    // Generate heightmaps based on the mesh detail
     const voronoiHeightMap = voronoiGenerator.generateHeightMap(segments + 1, segments + 1);
     const noiseHeightMap = perlinNoiseGenerator.generateHeightMap(segments + 1, segments + 1);
 
@@ -183,52 +183,68 @@ function generateTerrain() {
     positionAttribute.needsUpdate = true;
     geometry.computeVertexNormals();
 
-    // After updating the geometry, update the colors
-    updateTerrainColor();
+    // After updating the geometry, update the material (color/texture)
+    updateTerrainMaterial();
 }
 
-function updateTerrainColor() {
-    const { enabled, paletteName } = colorGenerator.getSettings();
+function updateTerrainMaterial() {
+    const { enabled, paletteName, textureDetail } = colorGenerator.getSettings();
     const material = planeMesh.material;
-    const geometry = planeMesh.geometry;
-    const positionAttribute = geometry.attributes.position;
-    const vertexCount = positionAttribute.count;
 
+    // If color is disabled, use a simple green color and remove any texture
     if (!enabled) {
-        material.vertexColors = false;
-        material.color.set(0x00ff00); // Set to default green
+        if (material.map) {
+            material.map.dispose();
+            material.map = null;
+        }
+        material.color.set(0x00ff00);
         material.needsUpdate = true;
         return;
     }
 
-    material.vertexColors = true;
-    material.color.set(0xffffff); // Set to white to not tint vertex colors
+    // --- Generate a new texture for the terrain ---
 
+    // 1. Generate height data at the desired texture resolution
+    const texWidth = textureDetail;
+    const texHeight = textureDetail;
+    const voronoiTex = voronoiGenerator.generateHeightMap(texWidth, texHeight);
+    const noiseTex = perlinNoiseGenerator.generateHeightMap(texWidth, texHeight);
+
+    // 2. Combine height data and find min/max for color mapping
+    const combinedHeightMap = new Float32Array(texWidth * texHeight);
     let minY = Infinity;
     let maxY = -Infinity;
-    for (let i = 0; i < vertexCount; i++) {
-        const y = positionAttribute.getY(i);
-        if (y < minY) minY = y;
-        if (y > maxY) maxY = y;
+    for (let i = 0; i < combinedHeightMap.length; i++) {
+        const height = voronoiTex[i] + noiseTex[i];
+        combinedHeightMap[i] = height;
+        if (height < minY) minY = height;
+        if (height > maxY) maxY = height;
     }
 
+    // 3. Create the texture data array (Uint8Array for colors 0-255)
     const heightRange = maxY - minY;
-    const colors = new Float32Array(vertexCount * 3);
     const palette = colorGenerator.palettes[paletteName];
+    const textureData = new Uint8Array(texWidth * texHeight * 3); // *3 for R,G,B
 
-    for (let i = 0; i < vertexCount; i++) {
-        const y = positionAttribute.getY(i);
-        const alpha = heightRange > 0 ? (y - minY) / heightRange : 0.5;
+    for (let i = 0; i < combinedHeightMap.length; i++) {
+        const height = combinedHeightMap[i];
+        const alpha = heightRange > 0 ? (height - minY) / heightRange : 0.5;
         const color = colorGenerator.getColorAt(palette, alpha);
-        colors[i * 3] = color.r;
-        colors[i * 3 + 1] = color.g;
-        colors[i * 3 + 2] = color.b;
-    }
 
-    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    if (geometry.attributes.color) {
-        geometry.attributes.color.needsUpdate = true;
+        const index = i * 3;
+        textureData[index] = color.r * 255;
+        textureData[index + 1] = color.g * 255;
+        textureData[index + 2] = color.b * 255;
     }
+    
+    // 4. Create and apply the new DataTexture
+    if (material.map) material.map.dispose(); // Dispose old texture
+
+    const texture = new THREE.DataTexture(textureData, texWidth, texHeight, THREE.RGBFormat);
+    texture.needsUpdate = true;
+    
+    material.map = texture;
+    material.color.set(0xffffff); // Use white so it doesn't tint the texture
     material.needsUpdate = true;
 }
 

@@ -7,6 +7,10 @@ class ColorGenerator {
     constructor() {
         this.enabled = true;
         this.currentPalette = 'Classic'; // Default palette name
+        
+        // Define allowed power-of-two texture sizes
+        this.allowedTextureSizes = [64, 128, 256, 512, 1024, 2048];
+        this.textureDetail = 512; // Default texture resolution, must be in the list above
 
         this.palettes = {
             'Classic': [
@@ -54,12 +58,22 @@ class ColorGenerator {
             paletteOptions += `<option value="${name}" ${name === this.currentPalette ? 'selected' : ''}>${name}</option>`;
         }
 
+        // The slider's value will now be the *index* of the allowed sizes array
+        const initialSliderIndex = this.allowedTextureSizes.indexOf(this.textureDetail);
+
         colorSection.innerHTML = `
             <div class="setting-group">
                 <label for="colorEnabled">Enable Color Texture</label>
                 <div class="toggle-container">
                     <input type="checkbox" id="colorEnabled" ${this.enabled ? 'checked' : ''}>
                     <label for="colorEnabled" class="toggle-label"></label>
+                </div>
+            </div>
+             <div class="setting-group">
+                <label for="textureDetail">Texture Detail (resolution)</label>
+                <div class="slider-container">
+                    <input type="range" id="textureDetail" min="0" max="${this.allowedTextureSizes.length - 1}" value="${initialSliderIndex}" step="1">
+                    <span class="value">${this.textureDetail}x${this.textureDetail}</span>
                 </div>
             </div>
             <div class="setting-group">
@@ -72,9 +86,21 @@ class ColorGenerator {
 
         const enabledToggle = colorSection.querySelector('#colorEnabled');
         const paletteSelect = colorSection.querySelector('#paletteSelect');
+        const textureDetailInput = colorSection.querySelector('#textureDetail');
+        const textureDetailValue = textureDetailInput.nextElementSibling;
 
         enabledToggle.addEventListener('change', (e) => {
             this.enabled = e.target.checked;
+            this.onSettingsChanged();
+        });
+        
+        textureDetailInput.addEventListener('input', (e) => {
+            // Get the selected index from the slider
+            const index = parseInt(e.target.value);
+            // Use the index to look up the actual texture size
+            this.textureDetail = this.allowedTextureSizes[index];
+            // Update the display
+            textureDetailValue.textContent = `${this.textureDetail}x${this.textureDetail}`;
             this.onSettingsChanged();
         });
 
@@ -107,6 +133,7 @@ class ColorGenerator {
         return {
             enabled: this.enabled,
             paletteName: this.currentPalette,
+            textureDetail: this.textureDetail
         };
     }
 
