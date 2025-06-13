@@ -10,7 +10,7 @@ const camera = new THREE.PerspectiveCamera(
     0.1,
     10000
 );
-camera.position.set(0, 1000, 1000);
+camera.position.set(0, 1500, 1500);
 camera.lookAt(0, 0, 0);
 
 // Renderer setup
