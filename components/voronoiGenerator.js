@@ -4,9 +4,9 @@ class VoronoiGenerator {
         this.enabled = true;
         this.numCells = 50; // Controls density of Voronoi cells
         this.heightMultiplier = 50; // Controls overall height/amplitude of Voronoi features
-        this.smoothness = 0.5; // Controls the "spikiness" vs "flatness" of cell centers
+        this.smoothness = 2.0; // Adjusted default: Controls the "roundness" of cell centers (was 0.5)
         this.invertDirection = false; // Controls if features are inverted (troughs instead of peaks)
-        this.edgeInfluence = 0.0; // New: Controls how much the cell edges are emphasized (for ridginess)
+        this.edgeInfluence = 0.0; // Controls how much the cell edges are emphasized (for ridginess)
 
         this.cellCenters = [];
 
@@ -47,54 +47,45 @@ class VoronoiGenerator {
 
                 let minDistanceToCellCenter = Infinity;
                 let secondMinDistanceToCellCenter = Infinity;
-                // let closestCellCenter = null; // No longer strictly needed to store the center object for the calculation
                 
-
-                // Find the closest and second closest Voronoi cell centers
                 for (const center of this.cellCenters) {
                     const dist = this.distance({ x: normalizedX, y: normalizedY }, center);
                     if (dist < minDistanceToCellCenter) {
-                        secondMinDistanceToCellCenter = minDistanceToCellCenter; // The old min becomes the new second min
+                        secondMinDistanceToCellCenter = minDistanceToCellCenter; 
                         minDistanceToCellCenter = dist;
-                        // closestCellCenter = center; // If needed for other calculations
                     } else if (dist < secondMinDistanceToCellCenter) {
                         secondMinDistanceToCellCenter = dist;
                     }
                 }
 
                 let heightValue = 0;
-                // Only proceed if at least one cell center was found (i.e., minDistance is not Infinity)
                 if (minDistanceToCellCenter !== Infinity) {
-                    // Normalize distance to a range suitable for the height function (e.g., 0 to 1)
-                    const maxPossibleCellDistance = 0.5; // A reasonable max distance within a single cell, could be tuned
+                    const maxPossibleCellDistance = 0.5; 
                     const scaledDistance = Math.min(minDistanceToCellCenter / maxPossibleCellDistance, 1.0);
                     
-                    // Calculate base shape: peak at center (1), falls to 0 at edge
-                    let baseShape = Math.pow(1 - scaledDistance, this.smoothness);
-                    
-                    // Center the shape around 0 (ranges from 0.5 to -0.5)
-                    let centeredShape = baseShape - 0.5;
+                    // --- MODIFICATION HERE FOR SMOOTHER PEAKS ---
+                    // Using an inverse exponential/Gaussian-like falloff
+                    // Higher 'smoothness' (k_factor) makes the peak narrower and steeper (but still rounded).
+                    // Lower 'smoothness' makes it broader and flatter.
+                    // Map smoothness (0.1 to 5.0) to k_factor (e.g., 1 to 50, adjust as needed)
+                    const k_factor = this.smoothness * 10; // Adjust multiplier for desired range of steepness/roundness
+                    let baseShape = Math.exp(-k_factor * scaledDistance * scaledDistance);
+                    // This 'baseShape' now goes from 1 (at center) to ~0 (at edge) with a rounded top.
 
-                    // Calculate edge influence:
-                    // The difference (secondMin - min) is small near the edges and large near the centers.
-                    // We want this to contribute negatively or positively to the height.
+                    // Center the shape around 0 (ranges from 0.5 to -0.5 after this.heightMultiplier, not directly baseShape - 0.5)
+                    // The Gaussian-like shape already has its peak at 1 and falls to 0. We need to shift it down.
+                    // If height multiplier applies to amplitude, and you want it centered around 0, then:
+                    let centeredShape = baseShape - 0.5; // This still works to shift the 0-1 range to -0.5 to 0.5
+                                                          // so that heightMultiplier acts as amplitude around 0.
+
                     let edgeContribution = 0;
                     if (secondMinDistanceToCellCenter !== Infinity && this.edgeInfluence !== 0) {
-                        // Normalize the difference. A common approach is (d2 - d1).
-                        // maxPossibleCellDistance can be used to normalize the distance difference as well.
-                        // We want 0 at center, max at edge for positive ridginess.
-                        // Or vice versa for negative ridginess (valleys at edges).
                         const normalizedDistanceDifference = (secondMinDistanceToCellCenter - minDistanceToCellCenter) / maxPossibleCellDistance;
-                        
-                        // We can apply a power to this difference to control how sharply it rises/falls at the edge.
-                        // A linear application of edgeInfluence is a good start.
                         edgeContribution = normalizedDistanceDifference * this.edgeInfluence;
                     }
 
-                    // Combine primary shape with edge influence
                     heightValue = this.heightMultiplier * (centeredShape + edgeContribution);
 
-                    // Apply inversion if needed
                     if (this.invertDirection) {
                         heightValue *= -1;
                     }
@@ -106,18 +97,18 @@ class VoronoiGenerator {
         return heightMap;
     }
 
-    updateParameters(enabled, numCells, heightMultiplier, smoothness, invertDirection, edgeInfluence) { // Updated parameters
-        const shouldRegenerateCenters = (this.numCells !== numCells); // Cell jitter removed, so only numCells impacts regeneration
+    updateParameters(enabled, numCells, heightMultiplier, smoothness, invertDirection, edgeInfluence) {
+        const shouldRegenerateCenters = (this.numCells !== numCells);
 
         this.enabled = enabled;
         this.numCells = numCells;
         this.heightMultiplier = heightMultiplier;
         this.smoothness = smoothness;
         this.invertDirection = invertDirection; 
-        this.edgeInfluence = edgeInfluence; // Updated
+        this.edgeInfluence = edgeInfluence; 
 
         if (shouldRegenerateCenters) {
-            this.generateCellCenters(); // Regenerate centers if number changes
+            this.generateCellCenters();
         }
     }
 
@@ -147,7 +138,7 @@ class VoronoiGenerator {
                 </div>
             </div>
             <div class="setting-group">
-                <label for="voronoiSmoothness">Smoothness</label>
+                <label for="voronoiSmoothness">Roundness (Lower = Broader, Higher = Steeper)</label>
                 <div class="slider-container">
                     <input type="range" id="voronoiSmoothness" min="0.1" max="5.0" value="${this.smoothness}" step="0.1">
                     <span class="value">${this.smoothness.toFixed(1)}</span>
@@ -173,13 +164,13 @@ class VoronoiGenerator {
         const numCellsInput = voronoiSection.querySelector('#numCells');
         const voronoiHeightMultiplierInput = voronoiSection.querySelector('#voronoiHeightMultiplier');
         const voronoiSmoothnessInput = voronoiSection.querySelector('#voronoiSmoothness');
-        const voronoiEdgeInfluenceInput = voronoiSection.querySelector('#voronoiEdgeInfluence'); // New input
+        const voronoiEdgeInfluenceInput = voronoiSection.querySelector('#voronoiEdgeInfluence');
         const voronoiInvertDirectionToggle = voronoiSection.querySelector('#voronoiInvertDirection'); 
 
         const numCellsValue = numCellsInput.nextElementSibling;
         const voronoiHeightMultiplierValue = voronoiHeightMultiplierInput.nextElementSibling;
         const voronoiSmoothnessValue = voronoiSmoothnessInput.nextElementSibling;
-        const voronoiEdgeInfluenceValue = voronoiEdgeInfluenceInput.nextElementSibling; // New value span
+        const voronoiEdgeInfluenceValue = voronoiEdgeInfluenceInput.nextElementSibling;
 
         voronoiEnabledToggle.addEventListener('change', (e) => {
             this.enabled = e.target.checked;
@@ -204,7 +195,7 @@ class VoronoiGenerator {
             this.onSettingsChanged();
         });
 
-        voronoiEdgeInfluenceInput.addEventListener('input', (e) => { // New event listener
+        voronoiEdgeInfluenceInput.addEventListener('input', (e) => {
             this.edgeInfluence = parseFloat(e.target.value);
             voronoiEdgeInfluenceValue.textContent = this.edgeInfluence.toFixed(2);
             this.onSettingsChanged();
@@ -224,7 +215,7 @@ class VoronoiGenerator {
                 heightMultiplier: this.heightMultiplier,
                 smoothness: this.smoothness,
                 invertDirection: this.invertDirection,
-                edgeInfluence: this.edgeInfluence // New parameter
+                edgeInfluence: this.edgeInfluence
             }
         });
         document.dispatchEvent(event);
