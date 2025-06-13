@@ -7,6 +7,12 @@ let globalSettings;
 let voronoiGenerator;
 let colorGenerator;
 
+// Define a fixed, global height range for consistent coloring.
+// This ensures that "sea level" is always at the same altitude.
+const GLOBAL_MIN_HEIGHT = -100;
+const GLOBAL_MAX_HEIGHT = 200;
+
+
 function init() {
     // Scene setup
     scene = new THREE.Scene();
@@ -210,25 +216,27 @@ function updateTerrainMaterial() {
     const voronoiTex = voronoiGenerator.generateHeightMap(texWidth, texHeight);
     const noiseTex = perlinNoiseGenerator.generateHeightMap(texWidth, texHeight);
 
-    // 2. Combine height data and find min/max for color mapping
+    // 2. Combine height data
     const combinedHeightMap = new Float32Array(texWidth * texHeight);
-    let minY = Infinity;
-    let maxY = -Infinity;
     for (let i = 0; i < combinedHeightMap.length; i++) {
         const height = voronoiTex[i] + noiseTex[i];
         combinedHeightMap[i] = height;
-        if (height < minY) minY = height;
-        if (height > maxY) maxY = height;
     }
 
-    // 3. Create the texture data array (Uint8Array for colors 0-255)
-    const heightRange = maxY - minY;
+    // 3. Create the texture data array using the fixed global height range
+    const heightRange = GLOBAL_MAX_HEIGHT - GLOBAL_MIN_HEIGHT;
     const palette = colorGenerator.palettes[paletteName];
     const textureData = new Uint8Array(texWidth * texHeight * 3); // *3 for R,G,B
 
     for (let i = 0; i < combinedHeightMap.length; i++) {
         const height = combinedHeightMap[i];
-        const alpha = heightRange > 0 ? (height - minY) / heightRange : 0.5;
+        
+        // Normalize the height against the global range to get a value between 0 and 1.
+        let alpha = (height - GLOBAL_MIN_HEIGHT) / heightRange;
+        
+        // Clamp the alpha value to ensure it's always within the [0, 1] range.
+        alpha = Math.max(0, Math.min(1, alpha)); 
+
         const color = colorGenerator.getColorAt(palette, alpha);
 
         const index = i * 3;
