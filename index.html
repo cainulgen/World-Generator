@@ -5,18 +5,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Land Generator</title>
   <style>
-    body { margin: 0; overflow: hidden; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background-color: #222;
+    }
     canvas { display: block; }
+    #options-toggle {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 1;
+      background: #444;
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+    #options-panel {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 250px;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      box-sizing: border-box;
+      padding: 20px;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+    }
+    #options-panel.open {
+      transform: translateX(0);
+    }
   </style>
 </head>
 <body>
+  <button id="options-toggle">Options</button>
+  <div id="options-panel">
+    <h2>Options</h2>
+    <p>Coming soon</p>
+  </div>
 
 <script type="module">
 import * as THREE from 'https://unpkg.com/three@0.161.0/build/three.module.js';
 import { OrbitControls } from 'https://unpkg.com/three@0.161.0/examples/jsm/controls/OrbitControls.js';
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xbfd1e5);
+scene.background = new THREE.Color(0x222222);
 
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 10000);
 camera.position.set(1000, 800, 1000);
@@ -33,7 +70,7 @@ controls.enablePan = true;
 // 2000m square grid
 const size = 2000;
 const divisions = 50;
-const gridHelper = new THREE.GridHelper(size, divisions);
+const gridHelper = new THREE.GridHelper(size, divisions, 0x888888, 0x444444);
 scene.add(gridHelper);
 
 function onWindowResize() {
@@ -42,6 +79,12 @@ function onWindowResize() {
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
 window.addEventListener('resize', onWindowResize);
+
+const toggleBtn = document.getElementById('options-toggle');
+const optionsPanel = document.getElementById('options-panel');
+toggleBtn.addEventListener('click', () => {
+  optionsPanel.classList.toggle('open');
+});
 
 function animate() {
   requestAnimationFrame(animate);
