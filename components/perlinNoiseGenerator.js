@@ -1,4 +1,4 @@
-class NoiseGenerator {
+class PerlinNoiseGenerator {
     constructor() {
         this.scale = 2; // Controls both horizontal and proportional vertical scaling
         this.frequency = 10; // Base frequency

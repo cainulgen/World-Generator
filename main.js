@@ -2,9 +2,9 @@
 // Basic Three.js setup
 let scene, camera, renderer, controls;
 let planeMesh;
-let noiseGenerator;
+let perlinNoiseGenerator; // Renamed variable
 let globalSettings;
-let voronoiGenerator; // Renamed instance
+let voronoiGenerator;
 
 function init() {
     // Scene setup
@@ -42,9 +42,9 @@ function init() {
     scene.add(directionalLight);
 
     // Initialize generators
-    noiseGenerator = new NoiseGenerator();
+    perlinNoiseGenerator = new PerlinNoiseGenerator(); // Renamed instantiation
     globalSettings = new GlobalSettings();
-    voronoiGenerator = new VoronoiGenerator(); // Instantiate VoronoiGenerator
+    voronoiGenerator = new VoronoiGenerator();
 
     // Event listeners for settings changes
     document.addEventListener('globalSettingsChanged', (e) => {
@@ -55,11 +55,8 @@ function init() {
     });
 
     document.addEventListener('voronoiSettingsChanged', (e) => {
-        const { enabled, numCells, heightMultiplier, smoothness, cellJitter } = e.detail; // Destructure new param
-        console.log('Voronoi settings changed:', enabled, numCells, heightMultiplier, smoothness, cellJitter); // Log new param
-        // The updateParameters call for voronoiGenerator is handled internally by its UI methods,
-        // but it's good practice to ensure main.js is aware or can trigger updates if needed.
-        // For now, we just trigger terrain generation as the voronoiGenerator itself updates its state.
+        const { enabled, numCells, heightMultiplier, smoothness, cellJitter } = e.detail;
+        console.log('Voronoi settings changed:', enabled, numCells, heightMultiplier, smoothness, cellJitter);
         generateTerrain();
     });
 
@@ -72,7 +69,7 @@ function init() {
     const heightScaleValue = heightScaleInput.nextElementSibling;
 
     noiseEnabledToggle.addEventListener('change', (e) => {
-        noiseGenerator.updateParameters(
+        perlinNoiseGenerator.updateParameters( // Renamed usage
             parseFloat(noiseScaleInput.value),
             parseFloat(heightScaleInput.value),
             e.target.checked
@@ -81,7 +78,7 @@ function init() {
     });
 
     noiseScaleInput.addEventListener('input', (e) => {
-        noiseGenerator.updateParameters(
+        perlinNoiseGenerator.updateParameters( // Renamed usage
             parseFloat(e.target.value),
             parseFloat(heightScaleInput.value),
             noiseEnabledToggle.checked
@@ -91,7 +88,7 @@ function init() {
     });
 
     heightScaleInput.addEventListener('input', (e) => {
-        noiseGenerator.updateParameters(
+        perlinNoiseGenerator.updateParameters( // Renamed usage
             parseFloat(noiseScaleInput.value),
             parseFloat(e.target.value),
             noiseEnabledToggle.checked
@@ -139,7 +136,7 @@ function generateTerrain() {
 
     // Generate height maps from both generators
     const voronoiHeightMap = voronoiGenerator.generateHeightMap(segments + 1, segments + 1);
-    const noiseHeightMap = noiseGenerator.generateHeightMap(segments + 1, segments + 1);
+    const noiseHeightMap = perlinNoiseGenerator.generateHeightMap(segments + 1, segments + 1); // Renamed usage
 
     // Combine heights
     for (let i = 0; i < vertexCount; i++) {
