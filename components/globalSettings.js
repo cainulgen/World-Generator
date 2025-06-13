@@ -1,6 +1,6 @@
 class GlobalSettings {
     constructor() {
-        this.meshDetail = 64; // Default segments (64x64 grid)
+        this.meshDetail = 256; // Default segments (64x64 grid)
         this.textureDetail = 1024; // Default texture resolution (power of 2)
         
         this.initializeUI();

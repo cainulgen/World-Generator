@@ -1,8 +1,8 @@
 class NoiseGenerator {
     constructor() {
-        this.scale = 1; // Controls both horizontal and proportional vertical scaling
+        this.scale = 2; // Controls both horizontal and proportional vertical scaling
         this.frequency = 10; // Base frequency
-        this.heightScale = 200; // Overall height multiplier, independent of 'noiseScale'
+        this.heightScale = 45; // Overall height multiplier, independent of 'noiseScale'
         this.enabled = true; // Whether noise is enabled
     }
 
