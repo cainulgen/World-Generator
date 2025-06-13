@@ -44,23 +44,15 @@ class PerlinNoiseGenerator {
         let total = 0;
         let amplitude = 1;
         let frequency = 1;
-        let maxValue = 0; // Used for normalizing result to -1 to 1
+        let maxValue = 0; // Used for normalizing result
 
         for (let i = 0; i < this.octaves; i++) {
             let noiseValue = this.noise(x * frequency, y * frequency);
 
             if (this.isRidged) {
                 // Ridged Multifractal logic: invert and absolute the noise
-                // A common way is 1.0 - Math.abs(noiseValue * 2 - 1)
-                // Since our base noise is 0-1, (noiseValue * 2 - 1) is -1 to 1
-                // So, 1 - Math.abs(normalizedNoise)
+                // This creates sharp ridges. The result is still in the [0, 1] range.
                 noiseValue = 1.0 - Math.abs(noiseValue * 2 - 1);
-                
-                // For a more classic ridged effect, subsequent layers can be influenced
-                // by the previous layer's value, but for simplicity and direct control,
-                // we apply the inversion per octave.
-                // It's also often weighted by the previous sum, but for a simple toggle,
-                // this direct inversion per octave works well.
             }
 
             total += noiseValue * amplitude;
@@ -71,9 +63,12 @@ class PerlinNoiseGenerator {
             frequency *= this.lacunarity;
         }
 
-        // Normalize the noise value to the range [-1, 1]
-        // This ensures the combined output is within a consistent range for height scaling
-        return (total / maxValue); // Total already in [-1, 1] because noiseValue is now effectively [-1, 1] or [0, 1] after ridged applied, and maxvalue is sum of amplitudes.
+        // Normalize the noise value to the range [0, 1]
+        const normalizedValue = total / maxValue;
+        
+        // --- FIX ---
+        // Shift the range from [0, 1] to [-1, 1] to center it around 0
+        return normalizedValue * 2 - 1;
     }
 
 
@@ -94,6 +89,7 @@ class PerlinNoiseGenerator {
                 const nx = normalizedX * effectiveFrequency;
                 const ny = normalizedY * effectiveFrequency;
 
+                // This noiseValue is now correctly in the [-1, 1] range
                 let noiseValue = this.fbm(nx, ny);
                 
                 heightMap[y * width + x] = noiseValue * this.scale * this.heightScale;
