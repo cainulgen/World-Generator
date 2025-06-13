@@ -1,182 +1,188 @@
-// Scene setup
-const container = document.querySelector('#scene-container');
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x1a1a1a);
+// Basic Three.js setup
+let scene, camera, renderer, controls;
+let planeMesh;
+let noiseGenerator;
+let globalSettings;
+let voronoiGenerator; // Renamed instance
 
-// Initialize Global Settings
-const globalSettings = new GlobalSettings();
+function init() {
+    // Scene setup
+    scene = new THREE.Scene();
+    // Reverting background color to default or black if not explicitly set by user.
+    // Assuming the original 'styles.css' body background color was intended.
+    scene.background = new THREE.Color(0x000000); // Black background as per initial styles.css
 
-// Initialize Noise Generator
-// The initial heightScale is now part of the noiseGenerator's internal state.
-const noiseGenerator = new NoiseGenerator();
+    // Camera setup
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+    camera.position.set(0, 400, 400); // Adjust camera position to see the plane
 
-// Camera setup
-const camera = new THREE.PerspectiveCamera(
-    75,
-    container.clientWidth / container.clientHeight,
-    0.1,
-    10000
-);
-camera.position.set(0, 1500, 1500);
-camera.lookAt(0, 0, 0);
+    // Renderer setup
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.getElementById('scene-container').appendChild(renderer.domElement);
 
-// Renderer setup
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(container.clientWidth, container.clientHeight);
-container.appendChild(renderer.domElement);
+    // OrbitControls for camera interaction
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.listenToKeyEvents(window); // Optional: Enable keyboard controls
+    controls.enableDamping = true; // An animation loop is required when damping is enabled
+    controls.dampingFactor = 0.05;
+    controls.screenSpacePanning = false;
+    controls.minDistance = 100;
+    controls.maxDistance = 1000;
+    controls.maxPolarAngle = Math.PI / 2; // Prevent camera from going below the ground
 
-// Create the landscape plane (2000m x 2000m)
-let planeGeometry = new THREE.PlaneGeometry(2000, 2000, globalSettings.getMeshDetail(), globalSettings.getMeshDetail());
-const planeMaterial = new THREE.MeshStandardMaterial({
-    color: 0x3a7e4f,
-    side: THREE.DoubleSide,
-    flatShading: true
-});
-const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-plane.rotation.x = -Math.PI / 2;
-scene.add(plane);
+    // Add lighting
+    const ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
+    scene.add(ambientLight);
 
-// Function to update plane geometry based on mesh detail
-function updatePlaneGeometry() {
-    const segments = globalSettings.getMeshDetail();
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
+    directionalLight.position.set(200, 500, 300);
+    directionalLight.castShadow = true;
+    scene.add(directionalLight);
 
-    plane.geometry.dispose();
-    planeGeometry = new THREE.PlaneGeometry(2000, 2000, segments, segments);
-    plane.geometry = planeGeometry;
+    // Initialize generators
+    noiseGenerator = new NoiseGenerator();
+    globalSettings = new GlobalSettings();
+    voronoiGenerator = new VoronoiGenerator(); // Instantiate VoronoiGenerator
 
-    applyNoiseToGeometry();
-}
+    // Event listeners for settings changes
+    document.addEventListener('globalSettingsChanged', (e) => {
+        const { meshDetail, textureDetail } = e.detail;
+        console.log('Global settings changed:', meshDetail, textureDetail);
+        updatePlaneGeometry(meshDetail);
+        generateTerrain();
+    });
 
-// Function to apply noise to the geometry
-function applyNoiseToGeometry() {
-    const segments = globalSettings.getMeshDetail();
-    // noiseGenerator.generateHeightMap now directly returns the final height value
-    // including both noiseScale and heightScale effects.
-    const heightMap = noiseGenerator.generateHeightMap(segments + 1, segments + 1);
-    const vertices = plane.geometry.attributes.position.array;
+    document.addEventListener('voronoiSettingsChanged', (e) => {
+        const { enabled, numCells, heightMultiplier, smoothness } = e.detail;
+        console.log('Voronoi settings changed:', enabled, numCells, heightMultiplier, smoothness);
+        // The updateParameters call for voronoiGenerator is handled internally by its UI methods,
+        // but it's good practice to ensure main.js is aware or can trigger updates if needed.
+        // For now, we just trigger terrain generation as the voronoiGenerator itself updates its state.
+        generateTerrain();
+    });
 
-    for (let i = 0; i < vertices.length; i += 3) {
-        const x = Math.floor((i / 3) % (segments + 1));
-        const y = Math.floor((i / 3) / (segments + 1));
-        const height = heightMap[y * (segments + 1) + x]; // Use the value directly
-        vertices[i + 2] = height;
-    }
+    // Event listeners for Noise & Distortion panel
+    const noiseEnabledToggle = document.getElementById('noiseEnabled');
+    const noiseScaleInput = document.getElementById('noiseScale');
+    const heightScaleInput = document.getElementById('heightScale');
 
-    plane.geometry.attributes.position.needsUpdate = true;
-    plane.geometry.computeVertexNormals();
-}
+    const noiseScaleValue = noiseScaleInput.nextElementSibling;
+    const heightScaleValue = heightScaleInput.nextElementSibling;
 
-// Initialize noise controls
-function initializeNoiseControls() {
-    const noiseSection = document.querySelector('[data-section="noise-distortion"] .section-content');
-    const noiseScaleInput = noiseSection.querySelector('#noiseScale');
-    const heightScaleInput = noiseSection.querySelector('#heightScale');
-    const noiseEnabledInput = noiseSection.querySelector('#noiseEnabled');
+    noiseEnabledToggle.addEventListener('change', (e) => {
+        noiseGenerator.updateParameters(
+            parseFloat(noiseScaleInput.value),
+            parseFloat(heightScaleInput.value),
+            e.target.checked
+        );
+        generateTerrain();
+    });
 
-    // Set initial UI values to match NoiseGenerator's constructor defaults
-    noiseScaleInput.value = noiseGenerator.scale;
-    noiseScaleInput.nextElementSibling.textContent = noiseGenerator.scale.toFixed(1);
-    heightScaleInput.value = noiseGenerator.heightScale;
-    heightScaleInput.nextElementSibling.textContent = noiseGenerator.heightScale.toFixed(1);
-    noiseEnabledInput.checked = noiseGenerator.enabled;
-
-    function updateNoise() {
-        const noiseScale = parseFloat(noiseScaleInput.value);
-        const heightScale = parseFloat(heightScaleInput.value);
-        const enabled = noiseEnabledInput.checked;
-        noiseGenerator.updateParameters(noiseScale, heightScale, enabled);
-        applyNoiseToGeometry();
-    }
-
-    // Add event listeners for both sliders and toggle
     noiseScaleInput.addEventListener('input', (e) => {
-        e.target.nextElementSibling.textContent = parseFloat(e.target.value).toFixed(1);
-        updateNoise();
+        noiseGenerator.updateParameters(
+            parseFloat(e.target.value),
+            parseFloat(heightScaleInput.value),
+            noiseEnabledToggle.checked
+        );
+        noiseScaleValue.textContent = parseFloat(e.target.value).toFixed(1);
+        generateTerrain();
     });
 
     heightScaleInput.addEventListener('input', (e) => {
-        e.target.nextElementSibling.textContent = parseFloat(e.target.value).toFixed(1);
-        updateNoise();
+        noiseGenerator.updateParameters(
+            parseFloat(noiseScaleInput.value),
+            parseFloat(e.target.value),
+            noiseEnabledToggle.checked
+        );
+        heightScaleValue.textContent = parseFloat(e.target.value).toFixed(1);
+        generateTerrain();
     });
 
-    noiseEnabledInput.addEventListener('change', updateNoise);
+    createPlane();
+    generateTerrain();
+    animate();
 
-    // Initial noise application
-    updateNoise();
+    // Handle window resizing
+    window.addEventListener('resize', onWindowResize, false);
 }
 
-// Listen for global settings changes
-document.addEventListener('globalSettingsChanged', (event) => {
-    const { meshDetail, textureDetail } = event.detail;
+function createPlane() {
+    const segments = globalSettings.getMeshDetail();
+    const geometry = new THREE.PlaneGeometry(1000, 1000, segments, segments);
+    geometry.rotateX(-Math.PI / 2); // Rotate to be flat on XZ plane
 
-    if (meshDetail) {
-        updatePlaneGeometry();
+    const material = new THREE.MeshPhongMaterial({ color: 0x00ff00, flatShading: true }); // Use PhongMaterial for lighting
+
+    planeMesh = new THREE.Mesh(geometry, material);
+    scene.add(planeMesh);
+}
+
+function updatePlaneGeometry(segments) {
+    if (planeMesh) {
+        scene.remove(planeMesh);
+        planeMesh.geometry.dispose(); // Dispose old geometry to free up memory
     }
+    const geometry = new THREE.PlaneGeometry(1000, 1000, segments, segments);
+    geometry.rotateX(-Math.PI / 2);
+    planeMesh = new THREE.Mesh(geometry, planeMesh.material);
+    scene.add(planeMesh);
+}
 
-    if (textureDetail) {
-        console.log('Texture detail changed to:', textureDetail);
+function generateTerrain() {
+    const geometry = planeMesh.geometry;
+    const positionAttribute = geometry.attributes.position;
+    const vertexCount = positionAttribute.count;
+    // Calculate segments based on vertex count for square plane
+    const segments = Math.sqrt(vertexCount) - 1;
+
+    // Generate height maps from both generators
+    const voronoiHeightMap = voronoiGenerator.generateHeightMap(segments + 1, segments + 1);
+    const noiseHeightMap = noiseGenerator.generateHeightMap(segments + 1, segments + 1);
+
+    // Combine heights
+    for (let i = 0; i < vertexCount; i++) {
+        // Add Voronoi height and noise height
+        positionAttribute.setY(i, voronoiHeightMap[i] + noiseHeightMap[i]);
     }
-});
+    positionAttribute.needsUpdate = true; // Tell Three.js that the vertex positions have changed
+    geometry.computeVertexNormals(); // Recalculate normals for correct lighting
+}
 
-// Add ambient light
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-scene.add(ambientLight);
+function animate() {
+    requestAnimationFrame(animate);
+    controls.update(); // only required if controls.enableDamping is set to true
+    renderer.render(scene, camera);
+}
 
-// Add directional light
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-directionalLight.position.set(500, 1000, 500);
-scene.add(directionalLight);
-
-// Add OrbitControls
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.05;
-controls.screenSpacePanning = false;
-controls.minDistance = 100;
-controls.maxDistance = 2000;
-controls.maxPolarAngle = Math.PI / 2;
-
-// Handle window resize
-window.addEventListener('resize', () => {
-    camera.aspect = container.clientWidth / container.clientHeight;
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(container.clientWidth, container.clientHeight);
-});
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
 
-// Initialize noise controls and UI listeners when DOM is loaded
+// Panel Toggle Logic
 document.addEventListener('DOMContentLoaded', () => {
-    initializeNoiseControls();
+    const terrainOptionsToggle = document.getElementById('terrain-options-toggle');
+    const terrainOptionsPanel = document.getElementById('terrain-options-panel');
+    const terrainOptionsClose = document.getElementById('terrain-options-close');
 
-    const toggleButton = document.getElementById('terrain-options-toggle');
-    const closeButton = document.getElementById('terrain-options-close');
-    const panel = document.getElementById('terrain-options-panel');
-    const sections = document.querySelectorAll('.panel-section');
-
-    toggleButton.addEventListener('mousedown', () => {
-        panel.classList.add('active');
-        toggleButton.style.display = 'none';
+    terrainOptionsToggle.addEventListener('click', () => {
+        terrainOptionsPanel.classList.add('active');
     });
 
-    closeButton.addEventListener('mousedown', () => {
-        panel.classList.remove('active');
-        toggleButton.style.display = 'flex';
+    terrainOptionsClose.addEventListener('click', () => {
+        terrainOptionsPanel.classList.remove('active');
     });
 
-    sections.forEach(section => {
-        const header = section.querySelector('.section-header');
-        header.addEventListener('mousedown', () => {
+    // Accordion functionality for panel sections
+    document.querySelectorAll('.panel-section .section-header').forEach(header => {
+        header.addEventListener('click', () => {
+            const section = header.closest('.panel-section');
             section.classList.toggle('active');
         });
     });
 
-    updatePlaneGeometry();
+    // Initialize the Three.js scene and terrain generation
+    init();
 });
-
-// Animation loop
-function animate() {
-    requestAnimationFrame(animate);
-    controls.update();
-    renderer.render(scene, camera);
-}
-
-animate();
