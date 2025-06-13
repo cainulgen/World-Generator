@@ -196,14 +196,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const terrainOptionsToggle = document.getElementById('terrain-options-toggle');
     const terrainOptionsPanel = document.getElementById('terrain-options-panel');
-    const terrainOptionsClose = document.getElementById('terrain-options-close');
 
-    terrainOptionsToggle.addEventListener('click', () => {
-        terrainOptionsPanel.classList.add('active');
+    // IMPORTANT: Panel Toggle Logic - DO NOT MODIFY THIS SECTION WITHOUT CAREFUL REVIEW.
+    // This handles the opening/closing of the side panel and the dynamic icon change
+    // of the toggle button itself (from cog to 'X' and back).
+    // The panel uses CSS transitions for smooth animation via the 'active' class.
+    terrainOptionsToggle.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevents this click from bubbling up to the document click listener
+        const icon = terrainOptionsToggle.querySelector('i'); // Get the Font Awesome icon element inside the button
+
+        if (terrainOptionsPanel.classList.contains('active')) {
+            // Panel is currently open, so close it
+            terrainOptionsPanel.classList.remove('active');
+            // Change icon from 'times' (X) back to 'cog'
+            icon.classList.remove('fa-times');
+            icon.classList.add('fa-cog');
+            // Remove any state-specific classes from the toggle button if applied for styling
+            terrainOptionsToggle.classList.remove('panel-open');
+        } else {
+            // Panel is currently closed, so open it
+            terrainOptionsPanel.classList.add('active');
+            // Change icon from 'cog' to 'times' (X)
+            icon.classList.remove('fa-cog');
+            icon.classList.add('fa-times');
+            // Add a state-specific class for styling the toggle button when panel is open
+            terrainOptionsToggle.classList.add('panel-open');
+        }
     });
 
-    terrainOptionsClose.addEventListener('click', () => {
-        terrainOptionsPanel.classList.remove('active');
+    // IMPORTANT: Click-outside-panel-to-close logic - DO NOT MODIFY WITHOUT CAREFUL REVIEW.
+    // This listener closes the panel if a click occurs anywhere on the document
+    // that is NOT inside the panel itself and NOT on the toggle button.
+    document.addEventListener('click', (e) => {
+        if (terrainOptionsPanel.classList.contains('active') &&
+            !terrainOptionsPanel.contains(e.target) &&
+            !terrainOptionsToggle.contains(e.target)) {
+            // Panel is open and click was outside, so close it
+            terrainOptionsPanel.classList.remove('active');
+            // Reset the toggle button icon to 'cog' when closed by external click
+            const icon = terrainOptionsToggle.querySelector('i');
+            icon.classList.remove('fa-times');
+            icon.classList.add('fa-cog');
+            // Remove state-specific class from toggle button
+            terrainOptionsToggle.classList.remove('panel-open');
+        }
+    });
+
+    // IMPORTANT: Prevent clicks inside panel from closing it - DO NOT MODIFY.
+    // This prevents clicks *within* the panel's content from bubbling up to the
+    // document's click listener and inadvertently closing the panel.
+    terrainOptionsPanel.addEventListener('click', (e) => {
+        e.stopPropagation();
     });
 
     // Accordion functionality for panel sections

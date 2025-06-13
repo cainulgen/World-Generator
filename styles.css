@@ -47,14 +47,20 @@ body {
     height: 100vh;
     background-color: #1e1e1e;
     box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
-    transition: right 0.2s ease;
+    transition: transform 0.3s ease;
     z-index: 999;
     display: flex;
     flex-direction: column;
+    transform: translateX(0);
 }
 
 .terrain-options-panel.active {
-    right: 0;
+    transform: translateX(-300px);
+}
+
+/* FIX: Hide the toggle button when the panel is active */
+.terrain-options-panel.active + .terrain-options-toggle {
+    display: none;
 }
 
 .panel-header {
@@ -254,4 +260,4 @@ body {
 
 .toggle-container input[type="checkbox"]:checked + .toggle-label:after {
     transform: translateX(26px);
-} 
+}
