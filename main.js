@@ -1,3 +1,4 @@
+// main.js
 // Basic Three.js setup
 let scene, camera, renderer, controls;
 let planeMesh;
@@ -54,8 +55,8 @@ function init() {
     });
 
     document.addEventListener('voronoiSettingsChanged', (e) => {
-        const { enabled, numCells, heightMultiplier, smoothness } = e.detail;
-        console.log('Voronoi settings changed:', enabled, numCells, heightMultiplier, smoothness);
+        const { enabled, numCells, heightMultiplier, smoothness, cellJitter } = e.detail; // Destructure new param
+        console.log('Voronoi settings changed:', enabled, numCells, heightMultiplier, smoothness, cellJitter); // Log new param
         // The updateParameters call for voronoiGenerator is handled internally by its UI methods,
         // but it's good practice to ensure main.js is aware or can trigger updates if needed.
         // For now, we just trigger terrain generation as the voronoiGenerator itself updates its state.
