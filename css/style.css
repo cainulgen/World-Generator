@@ -1,7 +1,8 @@
 body {
     margin: 0;
     overflow: hidden;
-    font-family: sans-serif;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; /* More modern font */
+    background-color: #f0f2f5; /* Subtle background for overall app */
 }
 
 #scene-container {
@@ -16,13 +17,13 @@ body {
     right: -300px;
     width: 300px;
     height: 100%;
-    background: #f4f4f4;
-    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+    background: #ffffff; /* Cleaner white background */
+    box-shadow: -4px 0 15px rgba(0,0,0,0.1); /* More pronounced, softer shadow */
     transition: right 0.3s ease-in-out;
     z-index: 1000;
+    border-left: 1px solid #e0e0e0; /* Subtle border to define edge */
 }
 
-/* THIS IS THE RULE THAT WAS MISSING */
 #settings-panel.open {
     right: 0;
 }
@@ -31,44 +32,153 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 20px;
-    border-bottom: 1px solid #ddd;
+    padding: 12px 20px; /* Slightly adjusted padding */
+    border-bottom: 1px solid #e0e0e0; /* Lighter border */
+    background-color: #f8f9fa; /* Very light background */
+    color: #333; /* Darker header text */
+    font-size: 1.1em; /* Slightly larger header text */
+    font-weight: 600; /* Bolder header text */
 }
 
+/* Add a close button for the panel header if needed (optional) */
+.panel-header .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: #666;
+}
+.panel-header .close-btn:hover {
+    color: #333;
+}
+
+
 .panel-content {
-    padding: 20px;
+    padding: 15px 20px; /* Reduced vertical padding for compactness */
 }
 
 .collapsible-header {
-    background-color: #eee;
-    color: #444; /* Color of "Noise Settings" text */
+    background-color: #f0f0f0; /* Lighter header background */
+    color: #4a4a4a; /* Slightly darker grey for readability */
     cursor: pointer;
-    padding: 18px;
+    padding: 12px 20px; /* Consistent padding */
     width: 100%;
     border: none;
     text-align: left;
     outline: none;
-    font-size: 15px; /* Font size of "Noise Settings" text */
-    border-bottom: 1px solid #ddd;
+    font-size: 14px; /* Slightly smaller for compactness */
+    font-weight: 500; /* Medium weight */
+    border-bottom: 1px solid #e0e0e0; /* Lighter border */
+    margin-bottom: 0; /* Ensure no extra margin below header */
+    box-sizing: border-box; /* Include padding in element's total width/height */
 }
 
 .collapsible-header:hover {
-    background-color: #ddd;
+    background-color: #e8e8e8; /* Subtle hover effect */
 }
 
 .collapsible-content {
-    padding: 20px; /* This sets padding around the content */
+    padding: 15px 20px; /* Consistent padding with panel-content */
     display: none;
     overflow: hidden;
-    background-color: #f9f9f9;
+    background-color: #ffffff; /* White background */
+    border-bottom: 1px solid #e0e0e0; /* Border at the bottom of content */
 }
 
-/* Updated Rule: Target the paragraph tags directly within collapsible-content */
+.collapsible-content:last-of-type {
+    border-bottom: none; /* No border for the very last collapsible content */
+}
+
 .collapsible-content p {
-    margin: 0; /* Remove default browser margin from paragraphs */
-    padding: 0; /* Ensure no extra padding from the paragraph itself */
-    font-size: 15px; /* Match the font-size of .collapsible-header */
-    color: #444; /* Match the color of .collapsible-header */
+    margin: 0; /* Ensure no default margin from paragraphs */
+    padding-bottom: 10px; /* Small padding below text if multiple lines */
+    font-size: 13px; /* Smaller text for compactness */
+    color: #666; /* Softer text color */
+    line-height: 1.5; /* Good readability */
+}
+
+/* STYLES FOR SLIDER - Modern, Minimal, Compact */
+.setting-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px; /* Spacing between setting items */
+}
+
+.setting-item label {
+    font-size: 13px; /* Small, clear label */
+    color: #333; /* Darker for better contrast */
+    margin-bottom: 5px; /* Space between label and slider */
+    display: block;
+    font-weight: 500; /* Slightly bolder for labels */
+}
+
+.slider-with-value {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between slider and value */
+    width: 100%;
+}
+
+.setting-item input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px; /* Even thinner track for ultimate minimalism */
+    background: #d8dce2; /* Lighter, subtle track color */
+    border-radius: 2px; /* Less rounded track */
+    outline: none;
+    transition: background 0.2s ease-in-out;
+    flex-grow: 1;
+}
+
+.setting-item input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px; /* Smaller thumb */
+    height: 14px; /* Smaller thumb */
+    border-radius: 50%;
+    background: #007bff; /* Consistent modern blue */
+    cursor: grab;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    margin-top: -5px; /* Center on the thinner track */
+    transition: background 0.2s ease-in-out, transform 0.1s ease-in-out; /* Smooth hover effect */
+}
+
+.setting-item input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #007bff;
+    cursor: grab;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    /* margin-top adjustment may differ slightly for Firefox */
+    transition: background 0.2s ease-in-out;
+}
+
+/* Highlight thumb on hover/active for better UX */
+.setting-item input[type="range"]:hover::-webkit-slider-thumb {
+    background: #0056b3; /* Darker blue on hover */
+    transform: scale(1.1); /* Slightly grow on hover */
+}
+.setting-item input[type="range"]:active::-webkit-slider-thumb {
+    background: #004085; /* Even darker on active */
+    cursor: grabbing; /* Indicate grabbing */
+    transform: scale(1.05); /* Slight grow on active */
+}
+.setting-item input[type="range"]:hover::-moz-range-thumb {
+    background: #0056b3;
+}
+.setting-item input[type="range"]:active::-moz-range-thumb {
+    background: #004085;
+}
+
+
+.setting-item span {
+    font-size: 13px; /* Consistent small font */
+    color: #333; /* Darker for readability */
+    min-width: 35px; /* Slightly more space for value */
+    text-align: right;
+    flex-shrink: 0;
+    font-weight: 500; /* Slightly bolder for values */
 }
 
 
@@ -78,8 +188,8 @@ body {
     right: 20px;
     width: 40px;
     height: 40px;
-    background: #fff;
-    border: 1px solid #ccc;
+    background: #ffffff; /* White background */
+    border: 1px solid #e0e0e0; /* Lighter border */
     border-radius: 5px;
     cursor: pointer;
     z-index: 1001;
@@ -88,6 +198,14 @@ body {
     justify-content: center;
     align-items: center;
     padding: 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle shadow */
+    transition: all 0.2s ease-in-out; /* Smooth transition for button */
+}
+
+#settings-btn:hover {
+    background-color: #f8f9fa; /* Light hover background */
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15); /* Slightly larger shadow on hover */
+    transform: translateY(-1px); /* Slight lift on hover */
 }
 
 #settings-btn span {
@@ -95,12 +213,12 @@ body {
     width: 20px;
     height: 2px;
     background: #333;
-    margin: 2px 0;
+    margin: 3px 0; /* Slightly more margin for clearer lines */
     transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 #settings-btn.active span:nth-child(1) {
-    transform: translateY(6px) rotate(45deg);
+    transform: translateY(5px) rotate(45deg); /* Adjusted for new margin */
 }
 
 #settings-btn.active span:nth-child(2) {
@@ -108,5 +226,5 @@ body {
 }
 
 #settings-btn.active span:nth-child(3) {
-    transform: translateY(-6px) rotate(-45deg);
+    transform: translateY(-5px) rotate(-45deg); /* Adjusted for new margin */
 }
