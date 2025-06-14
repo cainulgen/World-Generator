@@ -262,3 +262,55 @@
 .text-gray-500 { color: #999999; }
 .text-gray-600 { color: #b3b3b3; }
 .text-gray-900 { color: #ffffff; }
+
+/* Radio Button Styles for Color Palette */
+.radio-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.radio-item label {
+    margin-bottom: 0; /* Override default margin */
+    cursor: pointer;
+    flex-grow: 1; /* Allow label to take up space */
+}
+
+.radio-item input[type="radio"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: #333;
+    margin: 0;
+    font: inherit;
+    color: currentColor;
+    width: 1.15em;
+    height: 1.15em;
+    border: 1px solid #555;
+    border-radius: 50%;
+    transform: translateY(-0.075em);
+    display: grid;
+    place-content: center;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.radio-item input[type="radio"]::before {
+    content: "";
+    width: 0.65em;
+    height: 0.65em;
+    border-radius: 50%;
+    transform: scale(0);
+    transition: 120ms transform ease-in-out;
+    background-color: #ffffff;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+.radio-item input[type="radio"]:checked::before {
+    transform: scale(1);
+}
+
+.radio-item input[type="radio"]:hover {
+    border-color: #777;
+}
