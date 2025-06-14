@@ -1,8 +1,8 @@
 body {
     margin: 0;
     overflow: hidden;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; /* More modern font */
-    background-color: #f0f2f5; /* Subtle background for overall app */
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: #fafafa;
 }
 
 #scene-container {
@@ -14,14 +14,15 @@ body {
 #settings-panel {
     position: fixed;
     top: 0;
-    right: -300px;
-    width: 300px;
+    right: -320px;
+    width: 320px;
     height: 100%;
-    background: #ffffff; /* Cleaner white background */
-    box-shadow: -4px 0 15px rgba(0,0,0,0.1); /* More pronounced, softer shadow */
-    transition: right 0.3s ease-in-out;
+    background: #ffffff;
+    box-shadow: -2px 0 20px rgba(0, 0, 0, 0.08);
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1000;
-    border-left: 1px solid #e0e0e0; /* Subtle border to define edge */
+    border-left: 1px solid #e5e7eb;
+    backdrop-filter: blur(10px);
 }
 
 #settings-panel.open {
@@ -32,199 +33,259 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 20px; /* Slightly adjusted padding */
-    border-bottom: 1px solid #e0e0e0; /* Lighter border */
-    background-color: #f8f9fa; /* Very light background */
-    color: #333; /* Darker header text */
-    font-size: 1.1em; /* Slightly larger header text */
-    font-weight: 600; /* Bolder header text */
+    padding: 16px 20px;
+    border-bottom: 1px solid #e5e7eb;
+    background-color: #ffffff;
+    color: #111827;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
 }
-
-/* Add a close button for the panel header if needed (optional) */
-.panel-header .close-btn {
-    background: none;
-    border: none;
-    font-size: 1.5em;
-    cursor: pointer;
-    color: #666;
-}
-.panel-header .close-btn:hover {
-    color: #333;
-}
-
 
 .panel-content {
-    padding: 15px 20px; /* Reduced vertical padding for compactness */
+    padding: 0;
+    height: calc(100% - 57px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db #f9fafb;
+}
+
+.panel-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.panel-content::-webkit-scrollbar-track {
+    background: #f9fafb;
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+.panel-content::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
 }
 
 .collapsible-header {
-    background-color: #f0f0f0; /* Lighter header background */
-    color: #4a4a4a; /* Slightly darker grey for readability */
+    background-color: #f9fafb;
+    color: #374151;
     cursor: pointer;
-    padding: 12px 20px; /* Consistent padding */
+    padding: 14px 20px;
     width: 100%;
     border: none;
     text-align: left;
     outline: none;
-    font-size: 14px; /* Slightly smaller for compactness */
-    font-weight: 500; /* Medium weight */
-    border-bottom: 1px solid #e0e0e0; /* Lighter border */
-    margin-bottom: 0; /* Ensure no extra margin below header */
-    box-sizing: border-box; /* Include padding in element's total width/height */
+    font-size: 14px;
+    font-weight: 500;
+    border-bottom: 1px solid #e5e7eb;
+    margin: 0;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    position: relative;
 }
 
 .collapsible-header:hover {
-    background-color: #e8e8e8; /* Subtle hover effect */
+    background-color: #f3f4f6;
+    color: #111827;
+}
+
+.collapsible-header::after {
+    content: '+';
+    position: absolute;
+    right: 20px;
+    font-size: 18px;
+    font-weight: 300;
+    color: #6b7280;
+    transition: transform 0.2s ease;
+}
+
+.collapsible-header.active::after {
+    transform: rotate(45deg);
+    color: #374151;
 }
 
 .collapsible-content {
-    padding: 15px 20px; /* Consistent padding with panel-content */
+    padding: 20px;
     display: none;
-    overflow: hidden;
-    background-color: #ffffff; /* White background */
-    border-bottom: 1px solid #e0e0e0; /* Border at the bottom of content */
+    background-color: #ffffff;
+    border-bottom: 1px solid #f3f4f6;
 }
 
 .collapsible-content:last-of-type {
-    border-bottom: none; /* No border for the very last collapsible content */
+    border-bottom: none;
 }
 
 .collapsible-content p {
-    margin: 0; /* Ensure no default margin from paragraphs */
-    padding-bottom: 10px; /* Small padding below text if multiple lines */
-    font-size: 13px; /* Smaller text for compactness */
-    color: #666; /* Softer text color */
-    line-height: 1.5; /* Good readability */
+    margin: 0 0 16px 0;
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.5;
 }
 
-/* STYLES FOR SLIDER - Modern, Minimal, Compact */
+/* Modern Slider Styles */
 .setting-item {
     display: flex;
     flex-direction: column;
-    margin-bottom: 15px; /* Spacing between setting items */
+    margin-bottom: 20px;
+}
+
+.setting-item:last-child {
+    margin-bottom: 0;
 }
 
 .setting-item label {
-    font-size: 13px; /* Small, clear label */
-    color: #333; /* Darker for better contrast */
-    margin-bottom: 5px; /* Space between label and slider */
-    display: block;
-    font-weight: 500; /* Slightly bolder for labels */
+    font-size: 13px;
+    color: #374151;
+    margin-bottom: 8px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
 }
 
-.slider-with-value {
+.slider-container {
     display: flex;
     align-items: center;
-    gap: 10px; /* Space between slider and value */
-    width: 100%;
+    gap: 12px;
 }
 
 .setting-item input[type="range"] {
     -webkit-appearance: none;
+    appearance: none;
     width: 100%;
-    height: 4px; /* Even thinner track for ultimate minimalism */
-    background: #d8dce2; /* Lighter, subtle track color */
-    border-radius: 2px; /* Less rounded track */
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
     outline: none;
-    transition: background 0.2s ease-in-out;
+    transition: all 0.2s ease;
     flex-grow: 1;
+}
+
+.setting-item input[type="range"]:hover {
+    background: #d1d5db;
 }
 
 .setting-item input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 14px; /* Smaller thumb */
-    height: 14px; /* Smaller thumb */
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
-    background: #007bff; /* Consistent modern blue */
-    cursor: grab;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    margin-top: -5px; /* Center on the thinner track */
-    transition: background 0.2s ease-in-out, transform 0.1s ease-in-out; /* Smooth hover effect */
+    background: #3b82f6;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+    transition: all 0.2s ease;
+    border: 2px solid #ffffff;
 }
 
 .setting-item input[type="range"]::-moz-range-thumb {
-    width: 14px;
-    height: 14px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
-    background: #007bff;
-    cursor: grab;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    /* margin-top adjustment may differ slightly for Firefox */
-    transition: background 0.2s ease-in-out;
+    background: #3b82f6;
+    cursor: pointer;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+    transition: all 0.2s ease;
 }
 
-/* Highlight thumb on hover/active for better UX */
 .setting-item input[type="range"]:hover::-webkit-slider-thumb {
-    background: #0056b3; /* Darker blue on hover */
-    transform: scale(1.1); /* Slightly grow on hover */
+    background: #2563eb;
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
 }
+
 .setting-item input[type="range"]:active::-webkit-slider-thumb {
-    background: #004085; /* Even darker on active */
-    cursor: grabbing; /* Indicate grabbing */
-    transform: scale(1.05); /* Slight grow on active */
+    background: #1d4ed8;
+    transform: scale(1.05);
 }
+
 .setting-item input[type="range"]:hover::-moz-range-thumb {
-    background: #0056b3;
+    background: #2563eb;
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
 }
+
 .setting-item input[type="range"]:active::-moz-range-thumb {
-    background: #004085;
+    background: #1d4ed8;
 }
 
-
-.setting-item span {
-    font-size: 13px; /* Consistent small font */
-    color: #333; /* Darker for readability */
-    min-width: 35px; /* Slightly more space for value */
+.setting-value {
+    font-size: 12px;
+    color: #374151;
+    min-width: 35px;
     text-align: right;
-    flex-shrink: 0;
-    font-weight: 500; /* Slightly bolder for values */
+    font-weight: 500;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    background: #f9fafb;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid #e5e7eb;
 }
 
-
+/* Settings Button */
 #settings-btn {
     position: fixed;
     top: 20px;
     right: 20px;
-    width: 40px;
-    height: 40px;
-    background: #ffffff; /* White background */
-    border: 1px solid #e0e0e0; /* Lighter border */
-    border-radius: 5px;
+    width: 44px;
+    height: 44px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
     cursor: pointer;
     z-index: 1001;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 0;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle shadow */
-    transition: all 0.2s ease-in-out; /* Smooth transition for button */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
 }
 
 #settings-btn:hover {
-    background-color: #f8f9fa; /* Light hover background */
-    box-shadow: 0 3px 8px rgba(0,0,0,0.15); /* Slightly larger shadow on hover */
-    transform: translateY(-1px); /* Slight lift on hover */
+    background-color: #f9fafb;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
+    border-color: #d1d5db;
+}
+
+#settings-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 #settings-btn span {
     display: block;
-    width: 20px;
+    width: 18px;
     height: 2px;
-    background: #333;
-    margin: 3px 0; /* Slightly more margin for clearer lines */
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    background: #374151;
+    margin: 2px 0;
+    border-radius: 1px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #settings-btn.active span:nth-child(1) {
-    transform: translateY(5px) rotate(45deg); /* Adjusted for new margin */
+    transform: translateY(6px) rotate(45deg);
 }
 
 #settings-btn.active span:nth-child(2) {
     opacity: 0;
+    transform: scale(0);
 }
 
 #settings-btn.active span:nth-child(3) {
-    transform: translateY(-5px) rotate(-45deg); /* Adjusted for new margin */
+    transform: translateY(-6px) rotate(-45deg);
 }
+
+/* Utility Classes */
+.text-xs { font-size: 11px; }
+.text-sm { font-size: 13px; }
+.text-base { font-size: 14px; }
+.text-lg { font-size: 16px; }
+
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+
+.text-gray-500 { color: #6b7280; }
+.text-gray-600 { color: #4b5563; }
+.text-gray-900 { color: #111827; }
