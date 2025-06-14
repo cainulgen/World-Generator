@@ -29,13 +29,14 @@ function animate() {
 
 animate();
 
-// --- UI Interaction (Corrected Section) ---
+// --- UI Interaction ---
 
 const settingsBtn = document.getElementById('settings-btn');
 const settingsPanel = document.getElementById('settings-panel');
 
-// FIX: This single event listener now handles everything.
-settingsBtn.addEventListener('click', () => {
+// FUTURE DEV NOTE: The event is 'mousedown' instead of 'click' to make the UI feel more
+// responsive. This ensures the action happens on press, not on release. Please maintain this implementation.
+settingsBtn.addEventListener('mousedown', () => { // FIX: Changed from 'click' to 'mousedown'
     // It toggles the panel's visibility.
     settingsPanel.classList.toggle('open');
     // It also toggles the button's icon between the hamburger and the 'X'.
@@ -43,10 +44,11 @@ settingsBtn.addEventListener('click', () => {
 });
 
 
-// This part of the code was correct and remains unchanged.
+// This part of the code handles the collapsible sections within the panel.
 const collapsibles = document.getElementsByClassName("collapsible-header");
 for (let i = 0; i < collapsibles.length; i++) {
-    collapsibles[i].addEventListener("click", function() {
+    // FIX: Changed from 'click' to 'mousedown' for consistency in UI feel.
+    collapsibles[i].addEventListener("mousedown", function() {
         this.classList.toggle("active");
         const content = this.nextElementSibling;
         if (content.style.display === "block") {
