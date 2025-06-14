@@ -157,12 +157,10 @@ function generateTerrain() {
         noiseScale: parseFloat(noiseScaleSlider.value),
         noiseHeight: parseFloat(noiseHeightSlider.value),
         
-        // --- ADD UI FOR THESE ---
-        noiseType: 'ridged', // HARDCODED for now. Change to 'standard' or hook up to a UI element.
-        ridgedOctaves: 8,      // Example value
-        ridgedLacunarity: 2.0, // Example value
-        ridgedGain: 0.5,       // Example value
-        // -------------------------
+        noiseType: 'standard', // You can switch this between 'standard' and 'ridged'
+        ridgedOctaves: 8,      
+        ridgedLacunarity: 2.0, 
+        ridgedGain: 0.5,       
 
         rocksEnabled: rocksEnabledToggle.checked,
         rockStyle: rockStyleSelect.value,
@@ -178,6 +176,20 @@ function generateTerrain() {
         clusterThreshold: parseFloat(clusterThresholdSlider.value),
     };
 
+    // --- START OF FIX ---
+    // Pre-warm the Perlin noise generator to ensure a deterministic gradient field.
+    // This forces the gradients to be created in a consistent order, regardless of
+    // the vertex order that comes from the THREE.PlaneGeometry.
+    const maxGridCoord = Math.ceil((settings.worldSize / 2 / settings.noiseScale) + 1);
+    for (let gy = -maxGridCoord; gy <= maxGridCoord; gy++) {
+        for (let gx = -maxGridCoord; gx <= maxGridCoord; gx++) {
+            // By calling .get() once for each grid cell, we force the underlying
+            // random gradients to be calculated and cached in a fixed order.
+            terrainNoise.get(gx, gy);
+        }
+    }
+    // --- END OF FIX ---
+
     const { sites, delaunay } = generateRockData(seed, settings);
     const positions = plane.geometry.attributes.position.array;
     const colors = new Float32Array(positions.length);
@@ -188,7 +200,6 @@ function generateTerrain() {
         const x = positions[i];
         const y = positions[i + 1];
         
-        // --- UPDATED to include Ridged noise ---
         let baseNoise;
         if (settings.noiseType === 'ridged') {
             baseNoise = ridgedFBM(x / settings.noiseScale, y / settings.noiseScale, settings.ridgedOctaves, settings.ridgedLacunarity, settings.ridgedGain);
@@ -209,8 +220,11 @@ function generateTerrain() {
     const heightRange = (maxHeight - minHeight === 0) ? 1 : (maxHeight - minHeight);
     for (let i = 0; i < vertexData.length; i++) {
         const { height, rockFactor } = vertexData[i];
-        const normalizedHeight = (height - minHeight) / heightRange;
-        let finalColor = getColorFromPalette(normalizedHeight, activePalette);
+        
+        const normalizedHeight = -1 + (2 * (height - minHeight) / heightRange);
+        const paletteT = (normalizedHeight + 1) / 2;
+        
+        let finalColor = getColorFromPalette(paletteT, activePalette);
         
         if (rockFactor > 0.01 && activePalette.rockColors.length > 0) {
             const rockColorNoiseVal = (rockColorNoise.get(positions[i * 3] / 5, positions[i * 3 + 1] / 5) + 1) / 2;
