@@ -1,0 +1,103 @@
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: sans-serif;
+}
+
+#scene-container {
+    width: 100vw;
+    height: 100vh;
+    display: block;
+}
+
+#settings-panel {
+    position: fixed;
+    top: 0;
+    right: -300px;
+    width: 300px;
+    height: 100%;
+    background: #f4f4f4;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+    transition: right 0.3s ease-in-out;
+    z-index: 1000;
+}
+
+/* THIS IS THE RULE THAT WAS MISSING */
+#settings-panel.open {
+    right: 0;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+.panel-content {
+    padding: 20px;
+}
+
+.collapsible-header {
+    background-color: #eee;
+    color: #444;
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+.collapsible-header:hover {
+    background-color: #ddd;
+}
+
+.collapsible-content {
+    padding: 0 18px;
+    display: none;
+    overflow: hidden;
+    background-color: #f9f9f9;
+}
+
+#settings-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+}
+
+#settings-btn span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: #333;
+    margin: 2px 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+#settings-btn.active span:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+}
+
+#settings-btn.active span:nth-child(2) {
+    opacity: 0;
+}
+
+#settings-btn.active span:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
+}
