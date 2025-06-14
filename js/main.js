@@ -1,6 +1,6 @@
 import * as THREE from 'https://cdn.skypack.dev/three@0.129.0';
 import { createNoise2D } from 'https://cdn.skypack.dev/simplex-noise';
-import { scene, camera, renderer, controls, plane } from './scene.js';
+import { scene, camera, renderer, controls, plane, wireframeMaterial, solidMaterial } from './scene.js'; // Import materials
 
 // --- UI Elements ---
 const settingsBtn = document.getElementById('settings-btn');
@@ -12,6 +12,7 @@ const noiseScaleSlider = document.getElementById('noise-scale');
 const noiseScaleValue = document.getElementById('noise-scale-value');
 const noiseHeightSlider = document.getElementById('noise-height');
 const noiseHeightValue = document.getElementById('noise-height-value');
+const wireframeToggle = document.getElementById('wireframe-toggle'); 
 
 
 // --- Noise Generator ---
@@ -81,6 +82,15 @@ noiseHeightSlider.addEventListener('input', () => {
     noiseHeightValue.textContent = height.toFixed(1);
 
     generateTerrain();
+});
+
+// Wireframe Toggle
+wireframeToggle.addEventListener('change', () => {
+    if (wireframeToggle.checked) {
+        plane.material = wireframeMaterial;
+    } else {
+        plane.material = solidMaterial;
+    }
 });
 
 
