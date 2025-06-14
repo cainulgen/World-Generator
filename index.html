@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -24,41 +24,94 @@
                 <button class="collapsible-header active">Mesh</button>
                 <div class="collapsible-content" style="display: block;">
                     <div class="setting-item">
-                        <div class="label-value-pair">
-                            <label for="mesh-detail">Mesh Detail:</label>
-                            <span id="mesh-detail-value" class="slider-value-display">32</span>
-                        </div>
+                        <div class="label-value-pair"><label for="mesh-detail">Mesh Detail:</label><span id="mesh-detail-value" class="slider-value-display">32</span></div>
                         <input type="range" id="mesh-detail" min="32" max="512" value="32" step="1">
                     </div>
                     <div class="setting-item">
-                        <div class="label-value-pair">
-                            <label for="wireframe-toggle">Wireframe:</label>
-                            <input type="checkbox" id="wireframe-toggle" checked>
-                        </div>
+                        <div class="label-value-pair"><label for="wireframe-toggle">Wireframe:</label><input type="checkbox" id="wireframe-toggle" checked></div>
                     </div>
                 </div>
             </div>
 
             <div class="collapsible">
-                <button class="collapsible-header">Perlin Noise</button>
+                <button class="collapsible-header">Terrain Noise</button>
                 <div class="collapsible-content">
                     <div class="setting-item">
-                        <div class="label-value-pair">
-                            <label for="noise-scale">Noise Scale:</label>
-                            <span id="noise-scale-value" class="slider-value-display">3.0</span>
-                        </div>
+                        <div class="label-value-pair"><label for="noise-scale">Noise Scale:</label><span id="noise-scale-value" class="slider-value-display">3.0</span></div>
                         <input type="range" id="noise-scale" min="0.1" max="10" value="3" step="0.1">
                     </div>
                     <div class="setting-item">
-                        <div class="label-value-pair">
-                            <label for="noise-height">Noise Height:</label>
-                            <span id="noise-height-value" class="slider-value-display">0.6</span>
-                        </div>
+                        <div class="label-value-pair"><label for="noise-height">Noise Height:</label><span id="noise-height-value" class="slider-value-display">0.6</span></div>
                         <input type="range" id="noise-height" min="0" max="5" value="0.6" step="0.1">
                     </div>
                 </div>
             </div>
 
+            <div class="collapsible">
+                <button class="collapsible-header">Rock Formations</button>
+                <div class="collapsible-content">
+                    <div class="setting-item">
+                        <div class="label-value-pair"><label for="rocks-enabled">Enable Rocks:</label><input type="checkbox" id="rocks-enabled" checked></div>
+                    </div>
+                    <div class="setting-item">
+                        <label for="rock-style">Rock Style:</label>
+                        <select id="rock-style">
+                            <option value="smooth">Smooth Mounds</option>
+                            <option value="angular">Angular Mesas</option>
+                            <option value="voronoi">Voronoi Mesas</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <div class="label-value-pair"><label for="rock-density">Density:</label><span id="rock-density-value">0.20</span></div>
+                        <input type="range" id="rock-density" min="0.0" max="1" value="0.2" step="0.01">
+                    </div>
+                    <div class="setting-item">
+                        <div class="label-value-pair"><label for="rock-size">Size:</label><span id="rock-size-value">1.5</span></div>
+                        <input type="range" id="rock-size" min="0.1" max="5" value="1.5" step="0.1">
+                    </div>
+                    <div class="setting-item">
+                        <div class="label-value-pair"><label for="rock-min-height">Min Height:</label><span id="rock-min-height-value">0.2</span></div>
+                        <input type="range" id="rock-min-height" min="0" max="5" value="0.2" step="0.1">
+                    </div>
+                    <div class="setting-item">
+                        <div class="label-value-pair"><label for="rock-max-height">Max Height:</label><span id="rock-max-height-value">0.8</span></div>
+                        <input type="range" id="rock-max-height" min="0" max="5" value="0.8" step="0.1">
+                    </div>
+                    <div class="setting-item">
+                        <div class="label-value-pair"><label for="mesa-flatness">Mesa Flatness:</label><span id="mesa-flatness-value">0.4</span></div>
+                        <input type="range" id="mesa-flatness" min="0" max="0.9" value="0.4" step="0.01">
+                    </div>
+                    <div class="setting-item">
+                        <div class="label-value-pair"><label for="rock-falloff">Falloff:</label><span id="rock-falloff-value">1.0</span></div>
+                        <input type="range" id="rock-falloff" min="0.1" max="4.0" value="1.0" step="0.1">
+                    </div>
+                    <div class="setting-item">
+                        <div class="label-value-pair"><label for="rock-scale">Master Scale:</label><span id="rock-scale-value">1.0</span></div>
+                        <input type="range" id="rock-scale" min="0.1" max="3.0" value="1.0" step="0.1">
+                    </div>
+                    <hr>
+                    <div class="setting-item">
+                        <div class="label-value-pair"><label for="clustering-enabled">Enable Clustering:</label><input type="checkbox" id="clustering-enabled" checked></div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="label-value-pair"><label for="cluster-scale">Cluster Scale:</label><span id="cluster-scale-value">4.0</span></div>
+                        <input type="range" id="cluster-scale" min="0.1" max="10" value="4" step="0.1">
+                    </div>
+                    <div class="setting-item">
+                        <div class="label-value-pair"><label for="cluster-threshold">Cluster Threshold:</label><span id="cluster-threshold-value">0.50</span></div>
+                        <input type="range" id="cluster-threshold" min="0" max="1" value="0.5" step="0.01">
+                    </div>
+                    <hr>
+                    <div class="setting-item">
+                        <label for="random-seed">Seed:</label>
+                        <div class="seed-control">
+                           <input type="text" id="random-seed" value="12345">
+                           <button id="randomize-seed-btn" title="Generate new random seed">🎲</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="collapsible">
                 <button class="collapsible-header">Color</button>
                 <div class="collapsible-content">
@@ -69,6 +122,11 @@
         </div>
     </div>
 
+    <style>
+        .seed-control { display: flex; align-items: center; }
+        .seed-control input { flex-grow: 1; margin-right: 5px; }
+        hr { border: 0; height: 1px; background: #444; margin: 10px 0; }
+    </style>
     <script type="module" src="js/main.js"></script>
 
 </body>

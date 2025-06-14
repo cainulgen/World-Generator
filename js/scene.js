@@ -16,10 +16,10 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
 // --- Lights ---
-const ambientLight = new THREE.AmbientLight(0x404040, 1.5); // Slightly increased intensity
+const ambientLight = new THREE.AmbientLight(0x404040, 1.5);
 scene.add(ambientLight);
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0); // Slightly increased intensity
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
 directionalLight.position.set(10, 20, 10);
 directionalLight.castShadow = true;
 scene.add(directionalLight);
@@ -37,16 +37,16 @@ directionalLight.shadow.camera.bottom = -15;
 const initialDetail = 32;
 const geometry = new THREE.PlaneGeometry(10, 10, initialDetail, initialDetail);
 
-// MODIFICATION: The solid material now uses vertexColors.
-const wireframeMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, wireframe: true });
-const solidMaterial = new THREE.MeshStandardMaterial({ 
+// --- MODIFICATION ---
+// We now use only ONE material and will toggle its .wireframe property.
+const terrainMaterial = new THREE.MeshStandardMaterial({ 
     roughness: 0.8, 
     metalness: 0.1, 
-    vertexColors: true // This is the key change to enable height-based color
+    vertexColors: true, // Always use vertex colors
+    wireframe: true       // Start with wireframe enabled
 });
 
-// Initialize with wireframe material
-const plane = new THREE.Mesh(geometry, wireframeMaterial); 
+const plane = new THREE.Mesh(geometry, terrainMaterial); // Use the single material
 plane.rotation.x = -Math.PI / 2;
 plane.receiveShadow = true;
 plane.castShadow = true;
@@ -64,4 +64,5 @@ window.addEventListener('resize', () => {
 });
 
 // --- Export scene components ---
-export { scene, camera, renderer, controls, plane, wireframeMaterial, solidMaterial };
+// We no longer need to export separate materials.
+export { scene, camera, renderer, controls, plane };
