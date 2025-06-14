@@ -16,8 +16,7 @@ const noiseScaleSlider = document.getElementById('noise-scale');
 const noiseScaleValue = document.getElementById('noise-scale-value');
 const noiseHeightSlider = document.getElementById('noise-height');
 const noiseHeightValue = document.getElementById('noise-height-value');
-// *** ADD A UI DROPDOWN FOR THIS LATER ***
-// const noiseTypeSelect = document.getElementById('noise-type'); 
+const ridgedNoiseToggle = document.getElementById('ridged-noise-toggle');
 // Rock Formation
 const rocksEnabledToggle = document.getElementById('rocks-enabled');
 const rockStyleSelect = document.getElementById('rock-style');
@@ -157,7 +156,7 @@ function generateTerrain() {
         noiseScale: parseFloat(noiseScaleSlider.value),
         noiseHeight: parseFloat(noiseHeightSlider.value),
         
-        noiseType: 'standard', // You can switch this between 'standard' and 'ridged'
+        noiseType: ridgedNoiseToggle.checked ? 'ridged' : 'standard',
         ridgedOctaves: 8,      
         ridgedLacunarity: 2.0, 
         ridgedGain: 0.5,       
@@ -297,6 +296,8 @@ function setupEventListeners() {
     wireframeToggle.addEventListener('change', () => {
         plane.material.wireframe = wireframeToggle.checked;
     });
+
+    ridgedNoiseToggle.addEventListener('change', simpleUpdate);
 
     [rocksEnabledToggle, clusteringEnabledToggle, rockStyleSelect, seedInput].forEach(el => el.addEventListener('change', simpleUpdate));
     randomizeSeedBtn.addEventListener('mousedown', () => { seedInput.value = Math.floor(Math.random() * 100000); simpleUpdate(); });
