@@ -24,11 +24,11 @@
                 <button class="collapsible-header active">Mesh</button>
                 <div class="collapsible-content" style="display: block;">
                     <div class="setting-item">
-                        <label for="mesh-detail">Mesh Detail:</label>
-                        <div class="slider-with-value">
-                            <input type="range" id="mesh-detail" min="32" max="512" value="32" step="1">
-                            <span id="mesh-detail-value">32</span>
+                        <div class="label-value-pair">
+                            <label for="mesh-detail">Mesh Detail:</label>
+                            <span id="mesh-detail-value" class="slider-value-display">32</span>
                         </div>
+                        <input type="range" id="mesh-detail" min="32" max="512" value="32" step="1">
                     </div>
                 </div>
             </div>
@@ -37,18 +37,18 @@
                 <button class="collapsible-header">Perlin Noise</button>
                 <div class="collapsible-content">
                     <div class="setting-item">
-                        <label for="noise-scale">Noise Scale:</label>
-                        <div class="slider-with-value">
-                            <input type="range" id="noise-scale" min="0.1" max="10" value="1" step="0.1">
-                            <span id="noise-scale-value">1.0</span>
+                        <div class="label-value-pair">
+                            <label for="noise-scale">Noise Scale:</label>
+                            <span id="noise-scale-value" class="slider-value-display">1.0</span>
                         </div>
+                        <input type="range" id="noise-scale" min="0.1" max="10" value="1" step="0.1">
                     </div>
                     <div class="setting-item">
-                        <label for="noise-height">Noise Height:</label>
-                        <div class="slider-with-value">
-                            <input type="range" id="noise-height" min="0" max="5" value="1.5" step="0.1">
-                            <span id="noise-height-value">1.5</span>
+                        <div class="label-value-pair">
+                            <label for="noise-height">Noise Height:</label>
+                            <span id="noise-height-value" class="slider-value-display">1.5</span>
                         </div>
+                        <input type="range" id="noise-height" min="0" max="5" value="1.5" step="0.1">
                     </div>
                 </div>
             </div>
