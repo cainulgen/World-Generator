@@ -41,14 +41,14 @@ body {
 
 .collapsible-header {
     background-color: #eee;
-    color: #444;
+    color: #444; /* Color of "Noise Settings" text */
     cursor: pointer;
     padding: 18px;
     width: 100%;
     border: none;
     text-align: left;
     outline: none;
-    font-size: 15px;
+    font-size: 15px; /* Font size of "Noise Settings" text */
     border-bottom: 1px solid #ddd;
 }
 
@@ -57,11 +57,20 @@ body {
 }
 
 .collapsible-content {
-    padding: 0 18px;
+    padding: 20px; /* This sets padding around the content */
     display: none;
     overflow: hidden;
     background-color: #f9f9f9;
 }
+
+/* Updated Rule: Target the paragraph tags directly within collapsible-content */
+.collapsible-content p {
+    margin: 0; /* Remove default browser margin from paragraphs */
+    padding: 0; /* Ensure no extra padding from the paragraph itself */
+    font-size: 15px; /* Match the font-size of .collapsible-header */
+    color: #444; /* Match the color of .collapsible-header */
+}
+
 
 #settings-btn {
     position: fixed;
