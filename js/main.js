@@ -288,7 +288,14 @@ function setupEventListeners() {
         { el: rockScaleSlider, valEl: rockScaleValue, fixed: 1 }, { el: clusterScaleSlider, valEl: clusterScaleValue, fixed: 1 },
         { el: clusterThresholdSlider, valEl: clusterThresholdValue, fixed: 2 },
     ];
-    sliders.forEach(s => s.el.addEventListener('input', () => { s.valEl.textContent = parseFloat(s.el.value).toFixed(s.fixed); simpleUpdate(); }));
+    sliders.forEach(s => {
+        // Update the value display during dragging
+        s.el.addEventListener('input', () => {
+            s.valEl.textContent = parseFloat(s.el.value).toFixed(s.fixed);
+        });
+        // Only update the terrain when the slider is released
+        s.el.addEventListener('change', simpleUpdate);
+    });
 
     meshDetailSlider.addEventListener('input', () => { meshDetailValue.textContent = parseInt(meshDetailSlider.value); });
     meshDetailSlider.addEventListener('change', () => { const detail = parseInt(meshDetailSlider.value); plane.geometry.dispose(); plane.geometry = new THREE.PlaneGeometry(10, 10, detail, detail); simpleUpdate(); });
