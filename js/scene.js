@@ -29,19 +29,21 @@ function animate() {
 
 animate();
 
-// UI Interaction
+// --- UI Interaction (Corrected Section) ---
+
 const settingsBtn = document.getElementById('settings-btn');
-const closeBtn = document.getElementById('close-btn');
 const settingsPanel = document.getElementById('settings-panel');
 
+// FIX: This single event listener now handles everything.
 settingsBtn.addEventListener('click', () => {
-    settingsPanel.classList.add('open');
+    // It toggles the panel's visibility.
+    settingsPanel.classList.toggle('open');
+    // It also toggles the button's icon between the hamburger and the 'X'.
+    settingsBtn.classList.toggle('active');
 });
 
-closeBtn.addEventListener('click', () => {
-    settingsPanel.classList.remove('open');
-});
 
+// This part of the code was correct and remains unchanged.
 const collapsibles = document.getElementsByClassName("collapsible-header");
 for (let i = 0; i < collapsibles.length; i++) {
     collapsibles[i].addEventListener("click", function() {
