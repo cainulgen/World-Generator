@@ -276,6 +276,9 @@
     margin-bottom: 0; /* Override default margin */
     cursor: pointer;
     flex-grow: 1; /* Allow label to take up space */
+    color: #e5e5e5; /* Add explicit color matching other labels */
+    font-size: 13px; /* Match other label sizes */
+    font-weight: 500; /* Match other label weights */
 }
 
 .radio-item input[type="radio"] {
