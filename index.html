@@ -20,8 +20,21 @@
     <div id="settings-panel">
         <div class="panel-header">
             <h2>Terrain Settings</h2>
-            </div>
+        </div>
         <div class="panel-content">
+
+            <div class="collapsible">
+                <button class="collapsible-header active">Mesh Settings</button>
+                <div class="collapsible-content" style="display: block;">
+                    <div class="setting-item">
+                        <label for="mesh-detail">Mesh Detail:</label>
+                        <div class="slider-with-value">
+                            <input type="range" id="mesh-detail" min="32" max="512" value="32" step="1">
+                            <span id="mesh-detail-value">32</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div class="collapsible">
                 <button class="collapsible-header">Noise Settings</button>
@@ -46,7 +59,6 @@
         </div>
     </div>
 
-    <script type="module" src="js/scene.js"></script>
     <script type="module" src="js/main.js"></script>
 
 </body>
