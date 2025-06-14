@@ -1,4 +1,5 @@
 import * as THREE from 'https://cdn.skypack.dev/three@0.129.0';
+import { createNoise2D } from 'https://cdn.skypack.dev/simplex-noise';
 import { scene, camera, renderer, controls, plane } from './scene.js';
 
 // --- UI Elements ---
@@ -7,6 +8,32 @@ const settingsPanel = document.getElementById('settings-panel');
 const collapsibles = document.getElementsByClassName("collapsible-header");
 const meshDetailSlider = document.getElementById('mesh-detail');
 const meshDetailValue = document.getElementById('mesh-detail-value');
+const noiseScaleSlider = document.getElementById('noise-scale');
+const noiseScaleValue = document.getElementById('noise-scale-value');
+const noiseHeightSlider = document.getElementById('noise-height');
+const noiseHeightValue = document.getElementById('noise-height-value');
+
+
+// --- Noise Generator ---
+const noise2D = createNoise2D();
+
+// --- Terrain Generation Function ---
+function generateTerrain() {
+    const scale = parseFloat(noiseScaleSlider.value);
+    const amplitude = parseFloat(noiseHeightSlider.value);
+    const vertices = plane.geometry.attributes.position.array;
+
+    for (let i = 0; i <= vertices.length; i += 3) {
+        const x = vertices[i];
+        const y = vertices[i + 1];
+
+        vertices[i + 2] = noise2D(x / scale, y / scale) * amplitude;
+    }
+
+    plane.geometry.attributes.position.needsUpdate = true;
+    plane.geometry.computeVertexNormals();
+}
+
 
 // --- UI Event Listeners ---
 
@@ -34,12 +61,31 @@ meshDetailSlider.addEventListener('input', () => {
     const detail = parseInt(meshDetailSlider.value);
     meshDetailValue.textContent = detail;
 
-    // Dispose of the old geometry to free up memory
     plane.geometry.dispose();
-    
-    // Create new geometry with updated detail and apply it to the plane
     plane.geometry = new THREE.PlaneGeometry(10, 10, detail, detail);
+    
+    generateTerrain();
 });
+
+// Noise Scale Slider
+noiseScaleSlider.addEventListener('input', () => {
+    const scale = parseFloat(noiseScaleSlider.value);
+    noiseScaleValue.textContent = scale.toFixed(1);
+    
+    generateTerrain();
+});
+
+// Noise Height Slider
+noiseHeightSlider.addEventListener('input', () => {
+    const height = parseFloat(noiseHeightSlider.value);
+    noiseHeightValue.textContent = height.toFixed(1);
+
+    generateTerrain();
+});
+
+
+// --- Initial Terrain Generation ---
+generateTerrain();
 
 
 // --- Animation Loop ---
