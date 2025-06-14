@@ -3,121 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>World Generator</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>3D Landscape Generator V22 (Modular)</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-delaunay@6"></script>
+
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-    <button id="terrain-options-toggle" class="terrain-options-toggle">
-        <i class="fas fa-cog"></i>
-    </button>
-    <div id="terrain-options-panel" class="terrain-options-panel">
-        <div class="panel-header">
-            <h2>Terrain Settings</h2>
+<body class="bg-slate-900">
+
+    <div id="container"></div>
+
+    <div id="panel-toggle-btn">
+        <svg id="close-icon" class="active" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        <svg id="menu-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+    </div>
+
+    <div id="controls">
+        <h1 class="text-lg font-bold mb-3">Landscape Controls</h1>
+        
+        <div class="control-group"><label for="worldSize">World Size <span class="value-display" id="worldSizeValue">2000</span></label><input type="range" id="worldSize" class="control-input" min="100" max="2000" value="2000"></div>
+        <div class="control-group"><label for="detailLevel">Mesh Detail</label><select id="detailLevel" class="control-input"><option value="32">32x32</option><option value="64">64x64</option><option value="128" selected>128x128</option><option value="256">256x256</option><option value="512">512x512</option></select></div>
+        <hr class="border-slate-600 my-4">
+
+        <div class="main-section-container">
+            <div class="collapsible-header" data-target="terrain-shape-content"><h2 class="font-semibold">Terrain Shape</h2><svg class="toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+            <div id="terrain-shape-content" class="collapsible-content">
+                <div class="control-group"><label for="seed">Seed</label><div class="flex space-x-2"><input type="text" id="seed" class="control-input flex-grow"><button id="new-seed-btn" class="btn flex-shrink-0" style="width: auto; padding: 6px 12px;">New</button></div></div>
+                <div class="control-group"><label for="noiseScale">Noise Scale <span class="value-display" id="noiseScaleValue">250</span></label><input type="range" id="noiseScale" class="control-input" min="10" max="800" value="250"></div>
+                <div class="control-group"><label for="heightMultiplier">Height Multiplier <span class="value-display" id="heightMultiplierValue">150</span></label><input type="range" id="heightMultiplier" class="control-input" min="5" max="500" value="150"></div>
+                <div class="control-group"><label for="landFalloff">Island Falloff <span class="value-display" id="landFalloffValue">1.00</span></label><input type="range" id="landFalloff" class="control-input" min="0" max="1" step="0.01" value="1.0"></div>
+                <hr class="border-slate-500 my-3">
+                <div class="control-group"><label for="noiseType">Noise Type</label><select id="noiseType" class="control-input"><option value="standard">Standard Perlin</option><option value="ridged">Ridged Multifractal</option></select></div>
+                <div id="standard-controls" class="sub-section-wrapper"><p class="text-xs text-slate-300">Uses general Noise Scale.</p></div>
+                <div id="ridged-controls" class="sub-section-wrapper" style="display: none;"><div class="control-group"><label for="ridgedOctaves">Octaves <span class="value-display" id="ridgedOctavesValue">8</span></label><input type="range" id="ridgedOctaves" class="control-input" min="1" max="16" value="8"></div><div class="control-group"><label for="ridgedLacunarity">Lacunarity <span class="value-display" id="ridgedLacunarityValue">2.0</span></label><input type="range" id="ridgedLacunarity" class="control-input" min="1.0" max="4.0" step="0.1" value="2.0"></div><div class="control-group"><label for="ridgedGain">Gain <span class="value-display" id="ridgedGainValue">0.5</span></label><input type="range" id="ridgedGain" class="control-input" min="0.1" max="1.0" step="0.05" value="0.5"></div></div>
+                <button id="randomize-btn" class="btn text-sm py-2 mt-3">Randomize Settings</button>
             </div>
-        <div class="panel-content">
-            <div class="panel-section active" data-section="global-settings">
-                <div class="section-header">
-                    <h3>Global Settings</h3>
-                    <span class="expand-icon">▼</span>
+        </div>
+
+        <div class="main-section-container">
+            <div class="collapsible-header" data-target="rocks-content"><h2 class="font-semibold">Rock Formations</h2><div class="control-group flex items-center justify-between mb-0"><input type="checkbox" id="enableRocks" class="control-input"></div></div>
+            <div id="rocks-content" class="collapsible-content collapsed">
+                <div class="sub-section-wrapper">
+                    <div class="control-group"><label for="rockStyle">Style</label><select id="rockStyle" class="control-input"><option value="smooth">Smooth Mounds</option><option value="angular">Angular Mesas</option><option value="voronoi">Voronoi Mesas</option></select></div>
+                    <div class="control-group"><label for="rockDensity">Density <span class="value-display" id="rockDensityValue">0.20</span></label><input type="range" id="rockDensity" class="control-input" min="0" max="1" step="0.05" value="0.2"></div>
+                    <div class="control-group"><label for="rockSize">Base Size <span class="value-display" id="rockSizeValue">150</span></label><input type="range" id="rockSize" class="control-input" min="20" max="500" value="150"></div>
+                    <div class="control-group"><label for="rockMinHeight">Min Height <span class="value-display" id="rockMinHeightValue">20</span></label><input type="range" id="rockMinHeight" class="control-input" min="5" max="400" value="20"></div>
+                    <div class="control-group"><label for="rockMaxHeight">Max Height <span class="value-display" id="rockMaxHeightValue">80</span></label><input type="range" id="rockMaxHeight" class="control-input" min="5" max="400" value="80"></div>
                 </div>
-                <div class="section-content">
-                    <p>Parameters here</p>
+                <div class="collapsible-header mt-2" data-target="rock-shaping-content"><h3 class="font-semibold text-sm">Rock Shaping</h3><svg class="toggle-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+                <div id="rock-shaping-content" class="collapsible-content">
+                     <div class="sub-section-wrapper">
+                         <div id="mesa-controls">
+                            <div class="control-group"><label for="mesaFlatness">Mesa Flatness<span class="value-display" id="mesaFlatnessValue">0.40</span></label><input type="range" id="mesaFlatness" class="control-input" min="0" max="0.9" step="0.05" value="0.4"></div>
+                         </div>
+                         <div class="control-group"><label for="rockFalloff">Slope Power<span class="value-display" id="rockFalloffValue">1.0</span></label><input type="range" id="rockFalloff" class="control-input" min="0.1" max="4.0" step="0.1" value="1.0"></div>
+                         <div class="control-group"><label for="rockScale">Overall Scale <span class="value-display" id="rockScaleValue">1.0</span></label><input type="range" id="rockScale" class="control-input" min="0.1" max="3.0" step="0.1" value="1.0"></div>
+                     </div>
                 </div>
-            </div>
-            <div class="panel-section active" data-section="voronoi-component">
-                <div class="section-header">
-                    <h3>Voronoi</h3>
-                    <span class="expand-icon">▼</span>
-                </div>
-                <div class="section-content">
-                    <p>Parameters here</p>
-                </div>
-            </div>
-            <div class="panel-section active" data-section="noise-distortion">
-                <div class="section-header">
-                    <h3>Perlin Noise & Distortion</h3>
-                    <span class="expand-icon">▼</span>
-                </div>
-                <div class="section-content">
-                    <div class="setting-group">
-                        <label for="noiseEnabled">Enable Perlin Noise</label>
-                        <div class="toggle-container">
-                            <input type="checkbox" id="noiseEnabled" checked>
-                            <label for="noiseEnabled" class="toggle-label"></label>
-                        </div>
-                    </div>
-                    <div class="setting-group">
-                        <label for="noiseScale">Noise Scale</label>
-                        <div class="slider-container">
-                            <input type="range" id="noiseScale" min="0.1" max="10" value="2" step="0.1">
-                            <span class="value">2.0</span>
-                        </div>
-                    </div>
-                    <div class="setting-group">
-                        <label for="heightScale">Height Scale</label>
-                        <div class="slider-container">
-                            <input type="range" id="heightScale" min="0.1" max="500" value="45" step="0.1">
-                            <span class="value">45.0</span>
-                        </div>
-                    </div>
-                    <div class="setting-group">
-                        <label for="octaves">Octaves</label>
-                        <div class="slider-container">
-                            <input type="range" id="octaves" min="1" max="10" value="4" step="1">
-                            <span class="value">4</span>
-                        </div>
-                    </div>
-                    <div class="setting-group">
-                        <label for="persistence">Persistence</label>
-                        <div class="slider-container">
-                            <input type="range" id="persistence" min="0.1" max="0.9" value="0.5" step="0.01">
-                            <span class="value">0.50</span>
-                        </div>
-                    </div>
-                    <div class="setting-group">
-                        <label for="lacunarity">Lacunarity</label>
-                        <div class="slider-container">
-                            <input type="range" id="lacunarity" min="1.5" max="3.5" value="2.0" step="0.1">
-                            <span class="value">2.0</span>
-                        </div>
-                    </div>
-                    <div class="setting-group">
-                        <label for="isRidged">Ridged Noise</label>
-                        <div class="toggle-container">
-                            <input type="checkbox" id="isRidged">
-                            <label for="isRidged" class="toggle-label"></label>
-                        </div>
+                <div class="collapsible-header mt-2" data-target="clustering-content"><h3 class="font-semibold text-sm">Placement</h3><div class="control-group flex items-center justify-between mb-0"><input type="checkbox" id="enableClustering" class="control-input"></div></div>
+                <div id="clustering-content" class="collapsible-content collapsed">
+                    <div class="sub-section-wrapper">
+                        <div class="control-group"><label for="clusterScale">Cluster Scale <span class="value-display" id="clusterScaleValue">400</span></label><input type="range" id="clusterScale" class="control-input" min="50" max="1500" value="400"></div>
+                        <div class="control-group"><label for="clusterThreshold">Cluster Threshold <span class="value-display" id="clusterThresholdValue">0.50</span></label><input type="range" id="clusterThreshold" class="control-input" min="0.0" max="1.0" step="0.05" value="0.5"></div>
                     </div>
                 </div>
             </div>
-            <div class="panel-section active" data-section="rock-formations">
-                <div class="section-header">
-                    <h3>Rock Formations</h3>
-                    <span class="expand-icon">▼</span>
-                </div>
-                <div class="section-content">
-                    <p>Parameters here</p>
-                </div>
-            </div>
-            <div class="panel-section active" data-section="color">
-                <div class="section-header">
-                    <h3>Color</h3>
-                    <span class="expand-icon">▼</span>
-                </div>
-                <div class="section-content">
-                    <p>Color parameters here</p>
+        </div>
+
+        <div class="main-section-container">
+            <div class="collapsible-header" data-target="appearance-content"><h2 class="font-semibold">Appearance</h2><svg class="toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+            <div id="appearance-content" class="collapsible-content">
+                <div class="control-group"><label for="colorPalette">Color Palette</label><select id="colorPalette" class="control-input"><option value="earth">Classic Earth</option><option value="desert">Desert Oasis</option><option value="volcanic">Volcanic Wastes</option><option value="tundra">Frozen Tundra</option><option value="alien">Alien Jungle</option><option value="redPlanet">Red Planet</option><option value="highlands">Lush Highlands</option><option value="cyberpunk">Cyberpunk</option><option value="crystalCaves">Crystal Caves</option><option value="sunkenKingdom">Sunken Kingdom</option><option value="pastelDream">Pastel Dream</option></select></div>
+                <div class="control-group"><label for="textureDetail">Texture Detail<span class="value-display" id="textureDetailValue">1.0</span></label><input type="range" id="textureDetail" class="control-input" min="0.1" max="5.0" step="0.1" value="1.0"></div>
+                <hr class="border-slate-500 my-3">
+                <div class="collapsible-header mt-2" data-target="color-customization-content"><h3 class="font-semibold text-sm">Color Customization</h3><svg class="toggle-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+                 <div id="color-customization-content" class="collapsible-content">
+                    <div class="sub-section-wrapper">
+                         <div class="control-group"><label for="colorStops">Palette Color Stops<span class="value-display" id="colorStopsValue">7</span></label><input type="range" id="colorStops" class="control-input" min="3" max="10" step="1" value="7"></div>
+                         <div class="control-group"><label for="rockColorVariety">Rock Color Variety<span class="value-display" id="rockColorVarietyValue">3</span></label><input type="range" id="rockColorVariety" class="control-input" min="2" max="6" step="1" value="3"></div>
+                         <div class="control-group flex items-center justify-between"><label for="lockHarmony" class="mb-0">Lock Harmony</label><input type="checkbox" id="lockHarmony" class="control-input"></div>
+                         <button id="random-palette-btn" class="btn text-sm py-2">Generate Random Palette</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div id="scene-container"></div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="components/globalSettings.js"></script>
-    <script src="components/perlinNoiseGenerator.js"></script>
-    <script src="components/voronoiGenerator.js"></script>
-    <script src="components/colorGenerator.js"></script>
-    <script src="main.js"></script>
+
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
